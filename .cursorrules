@@ -1,0 +1,68 @@
+# Assistant SMP — контекст для Cursor AI
+
+## Проект
+Assistant SMP — интеллектуальный помощник для фельдшера скорой медицинской помощи.
+
+## Технологии
+- **Бэкенд:** FastAPI (Python 3.11)
+- **База данных:** PostgreSQL (Neon.tech)
+- **Деплой:** Render.com
+- **Фронтенд:** HTML + JavaScript (один index.html)
+- **Аутентификация:** JWT, вход по телефону или логину
+- **Роли:** admin, moderator, user
+
+## Инфраструктура
+- **Сайт:** https://assistant-smp.onrender.com
+- **База данных:** PostgreSQL на Neon.tech
+- **Репозиторий:** https://github.com/abdurakhman05osm/assistant-smp
+
+## Структура проекта
+
+app/
+├── api/
+│ └── endpoints/
+│ ├── auth.py # регистрация, логин, роли
+│ ├── templates.py # управление шаблонами
+│ ├── process.py # анализ текста, добавление данных
+│ ├── history.py # история вызовов
+│ └── game.py # клинические кейсы
+├── core/
+│ ├── engines/
+│ │ ├── parser_engine.py # извлечение данных из текста
+│ │ └── medical_engine.py # расчёт диагнозов
+│ └── knowledge/
+│ └── disease_kb.py # база заболеваний
+├── database.py # подключение к PostgreSQL
+├── main.py # точка входа FastAPI
+└── models/ # Pydantic-модели
+static/
+└── index.html # фронтенд (всё в одном файле)
+knowledge_base/
+└── diseases.json # 59 диагнозов с симптомами
+
+
+## Правила для AI
+1. **НЕ меняй** файлы, если не уверен на 100%.
+2. **Все изменения** сначала показывай в виде кода, а не применяй сразу.
+3. **Перед изменениями** уточняй у пользователя.
+4. **Не трогай** базу данных (Neon) без явного разрешения.
+5. **Не деплой** на Render без команды.
+6. **Логируй** все изменения в `CHANGELOG.md`.
+
+## Частые задачи
+1. **Добавить новый диагноз** → изменить `knowledge_base/diseases.json`.
+2. **Исправить парсинг** → изменить `app/core/engines/parser_engine.py`.
+3. **Изменить интерфейс** → изменить `static/index.html`.
+4. **Добавить новый эндпоинт** → создать файл в `app/api/endpoints/`.
+5. **Обновить роли** → изменить `app/api/endpoints/auth.py`.
+
+## Важные ссылки
+- **Render Dashboard:** https://dashboard.render.com
+- **Neon Console:** https://console.neon.tech
+- **GitHub:** https://github.com/abdurakhman05osm/assistant-smp
+
+## Запрещённые действия
+- ❌ Менять структуру базы данных без явного запроса.
+- ❌ Удалять существующие эндпоинты.
+- ❌ Менять логику авторизации без проверки.
+- ❌ Деплоить на Render вручную (только через Git push).

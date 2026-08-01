@@ -38,14 +38,15 @@ class MedicalEngine:
                 reverse=True
             )
             
-            top_count = min(3, len(scored_diseases))
-            top_diagnoses = scored_diseases[:top_count] if top_count > 0 else []
+            # Фильтруем > 30%
+            filtered = [d for d in scored_diseases if d['probability'] > 30]
             
-            if len(top_diagnoses) < 3 and len(scored_diseases) > len(top_diagnoses):
-                remaining = [d for d in scored_diseases if d not in top_diagnoses]
-                needed = 3 - len(top_diagnoses)
-                for d in remaining[:needed]:
-                    top_diagnoses.append(d)
+            # Если есть хотя бы 3 с > 30% — показываем их
+            if len(filtered) >= 3:
+                top_diagnoses = filtered[:3]
+            else:
+                # Иначе добираем из оставшихся, чтобы было 3
+                top_diagnoses = scored_diseases[:3]
             
             for item in top_diagnoses:
                 disease = item['disease']
@@ -71,16 +72,16 @@ class MedicalEngine:
                     icd10=icd10_code
                 ))
         
-        # ===== ГЕНЕРАЦИЯ ВОПРОСОВ (ИСПРАВЛЕНО) =====
-        questions = MedicalEngine._generate_intelligent_questions(
+        result['questions'] = MedicalEngine._generate_intelligent_questions(
             patient_data, 
             result['possible_diagnoses'],
             result['red_flags']
         )
         
-        # Добавляем вопросы в результат
-        result['questions'] = questions
-        result['new_questions'] = []  # пока пусто, можно добавить позже
+        result['new_questions'] = MedicalEngine._generate_follow_up_questions(
+            patient_data,
+            result['possible_diagnoses']
+        )
         
         return result
     
@@ -161,6 +162,22 @@ class MedicalEngine:
             if disease.get('id') == 'hypertensive_crisis' and vitals.bp_sys and vitals.bp_sys > 180:
                 base_prob += 20
             if disease.get('id') == 'insult' and vitals.spo2 and vitals.spo2 < 90:
+                base_prob += 15
+        
+        # Учёт анамнеза (хронические заболевания)
+        if patient_data.medical_history:
+            history_lower = patient_data.medical_history.lower()
+            disease_id = disease.get('id')
+            
+            if disease_id == 'oks' and ('ибс' in history_lower or 'ишемическая' in history_lower):
+                base_prob += 20
+            if disease_id == 'hypertensive_crisis' and ('гб' in history_lower or 'гипертони' in history_lower):
+                base_prob += 15
+            if disease_id == 'diabetic_coma' and ('сд' in history_lower or 'диабет' in history_lower):
+                base_prob += 20
+            if disease_id == 'insult' and ('гб' in history_lower or 'гипертони' in history_lower):
+                base_prob += 15
+            if disease_id == 'oks' and ('сд' in history_lower or 'диабет' in history_lower):
                 base_prob += 15
         
         base_prob = min(max(base_prob, 5), 95)
@@ -251,11 +268,9 @@ class MedicalEngine:
     
     @staticmethod
     def _generate_intelligent_questions(patient_data: PatientData, diagnoses: List[DiagnosisResult], red_flags: List[str]) -> List[str]:
-        """Генерация уточняющих вопросов"""
         questions = []
         vitals = patient_data.vitals
         
-        # 1. Проверяем красные флаги
         if red_flags:
             for flag in red_flags:
                 if "SpO₂" in flag and (not vitals or vitals.spo2 is None):
@@ -263,7 +278,6 @@ class MedicalEngine:
                 if "гипотензия" in flag and (not vitals or vitals.bp_sys is None):
                     questions.append("Какое артериальное давление?")
         
-        # 2. Проверяем витальные показатели
         if not vitals or vitals.bp_sys is None:
             questions.append("Какое артериальное давление? (например: 120/80)")
         if not vitals or vitals.heart_rate is None:
@@ -273,7 +287,6 @@ class MedicalEngine:
         if not vitals or vitals.temperature is None:
             questions.append("Есть ли температура? (в градусах)")
         
-        # 3. Вопросы по диагнозам
         if diagnoses:
             top = diagnoses[0] if diagnoses else None
             if top:
@@ -293,7 +306,6 @@ class MedicalEngine:
                     questions.append("Была ли травма груди?")
                     questions.append("Есть ли одышка в покое?")
         
-        # 4. Если вопросов нет — добавляем базовые
         if not questions:
             questions = [
                 "Уточните характер боли (давящая, колющая, жгучая)",
@@ -301,7 +313,6 @@ class MedicalEngine:
                 "Есть ли хронические заболевания? (гипертония, диабет, ишемия)"
             ]
         
-        # Убираем дубли
         seen = set()
         unique_questions = []
         for q in questions:
@@ -310,3 +321,28 @@ class MedicalEngine:
                 unique_questions.append(q)
         
         return unique_questions[:6]
+    
+    @staticmethod
+    def _generate_follow_up_questions(patient_data: PatientData, diagnoses: List[DiagnosisResult]) -> List[str]:
+        new_questions = []
+        vitals = patient_data.vitals
+        
+        if diagnoses:
+            top = diagnoses[0] if diagnoses else None
+            if top:
+                if top.id == 'oks' and vitals and vitals.heart_rate and vitals.heart_rate > 100:
+                    new_questions.append("Есть ли одышка в покое?")
+                    new_questions.append("Были ли обмороки?")
+                
+                if top.id == 'insult':
+                    if not any('глюкоза' in q for q in patient_data.complaints):
+                        new_questions.append("Какой уровень глюкозы? (норма 5.6 ммоль/л)")
+                    if vitals and vitals.bp_sys and vitals.bp_sys > 180:
+                        new_questions.append("Принимает ли антикоагулянты? (варфарин, ксарелто)")
+                
+                if top.id == 'hypertensive_crisis':
+                    if vitals and vitals.bp_sys and vitals.bp_sys > 200:
+                        new_questions.append("Есть ли нарушение зрения? (мушки, пятна)")
+                        new_questions.append("Есть ли тошнота или рвота?")
+        
+        return new_questions[:3]

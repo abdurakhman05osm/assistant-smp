@@ -60,7 +60,7 @@ class ParserEngine:
         if not bp_found:
             status_map['bp'] = 'UNKNOWN'
 
-        # 4. Извлечение ЧСС (с ограничением 250)
+        # 4. Извлечение ЧСС
         hr_patterns = [
             r'(?:пульс|ЧСС|heart rate)\s*[:]?\s*(\d{2,3})',
             r'пульс\s+(\d{2,3})',
@@ -124,56 +124,58 @@ class ParserEngine:
         else:
             status_map['temperature'] = 'UNKNOWN'
 
-        # 7. РАЗДЕЛЕНИЕ ЖАЛОБ И АНАМНЕЗА
+        # ===== 7. РАЗДЕЛЕНИЕ ЖАЛОБ И АНАМНЕЗА (ИСПРАВЛЕНО) =====
+        # Ключевые слова для анамнеза (расширенные)
         anamnesis_keywords = [
-            'сахарный диабет', 'диабет', 'гипертония', 'ишемия', 'инфаркт', 'инсульт',
-            'принимает', 'аллергия', 'операция', 'травма', 'беременность',
-            'хронический', 'заболевание', 'лекарство', 'препарат', 'антикоагулянт',
-            'варфарин', 'ксарелто', 'аспирин', 'инсулин', 'сердечный', 'давление'
+            'сахарный диабет', 'диабет', 'сд', 'гипертония', 'гипертонической',
+            'гб', 'ишемия', 'ибс', 'инфаркт', 'инсульт', 'стенокардия',
+            'хроническ', 'заболеван', 'операц', 'травм', 'беременност',
+            'принимает', 'аллерги', 'лекарств', 'препарат', 'антикоагулянт',
+            'варфарин', 'ксарелто', 'аспирин', 'инсулин', 'бронхиальн',
+            'астм', 'хобл', 'почечн', 'печеночн', 'онколог',
+            'страдает', 'болеет', 'диагностирован', 'перенёс', 'оперирован'
         ]
         
+        # Удаляем витальные данные из текста
         raw_text = text
+        raw_text = re.sub(r'\d{1,3}\s*(?:лет|год|года)', '', raw_text)
+        raw_text = re.sub(r'АД\s*[:]?\s*\d{2,3}\s*[/]\s*\d{2,3}', '', raw_text, flags=re.IGNORECASE)
+        raw_text = re.sub(r'(?:пульс|ЧСС)\s*[:]?\s*\d{2,3}', '', raw_text, flags=re.IGNORECASE)
+        raw_text = re.sub(r'(?:SpO2|сатурация)\s*[:]?\s*\d{2,3}', '', raw_text, flags=re.IGNORECASE)
+        raw_text = re.sub(r'(?:температура|t)\s*[:]?\s*\d{2,3}\.?\d*', '', raw_text, flags=re.IGNORECASE)
         raw_text = re.sub(r'\b(муж|мужчина|жен|женщина|male|female)\b', '', raw_text, flags=re.IGNORECASE)
         
-        remove_patterns = [
-            r'\d{1,3}\s*(?:лет|год|года)',
-            r'АД\s*[:]?\s*\d{2,3}\s*[/]\s*\d{2,3}',
-            r'давление\s*[:]?\s*\d{2,3}\s*[/]\s*\d{2,3}',
-            r'(?:пульс|ЧСС)\s*[:]?\s*\d{2,3}',
-            r'(?:SpO2|сатурация)\s*[:]?\s*\d{2,3}',
-            r'(?:температура|t)\s*[:]?\s*\d{2,3}\.?\d*',
-            r'❓\s*[^,.]*',
-            r'•\s*[^,.]*',
-            r'[:;]\s*\d+',
-            r'\d{2,3}\s*%',
-            r'\d{2,3}\s*°C',
-        ]
+        # Убираем артефакт "а." (остаток от возраста)
+        raw_text = re.sub(r'^\s*[а-яa-z]\.\s*', '', raw_text)
+        raw_text = re.sub(r'\s*[а-яa-z]\.\s*', ' ', raw_text)
         
-        cleaned_text = raw_text
-        for pattern in remove_patterns:
-            cleaned_text = re.sub(pattern, '', cleaned_text, flags=re.IGNORECASE)
+        # Чистим лишние точки и запятые
+        raw_text = re.sub(r'\.\s*\.', '.', raw_text)
+        raw_text = re.sub(r';\s*;', ';', raw_text)
+        raw_text = re.sub(r',\s*,', ',', raw_text)
+        raw_text = re.sub(r'\s+', ' ', raw_text).strip()
         
-        cleaned_text = re.sub(r'[;:•❓]', ',', cleaned_text)
-        cleaned_text = re.sub(r',\s*,', ',', cleaned_text)
-        cleaned_text = re.sub(r'\s+', ' ', cleaned_text).strip()
-        cleaned_text = re.sub(r'^[,.\s]+', '', cleaned_text)
-        cleaned_text = re.sub(r'[,.\s]+$', '', cleaned_text)
-        
+        # Разбиваем на части по разделителям (точка, точка с запятой, запятая)
+        parts = re.split(r'[.;,]\s*', raw_text)
+        parts = [p.strip() for p in parts if p.strip() and len(p.strip()) > 2]
+
         complaints = []
         anamnesis = []
-        
-        if cleaned_text:
-            parts = [p.strip() for p in cleaned_text.split(',') if p.strip() and len(p.strip()) > 2]
+
+        for part in parts:
+            part_lower = part.lower()
+            # Проверяем, относится ли часть к анамнезу
+            is_anamnesis = any(keyword in part_lower for keyword in anamnesis_keywords)
             
-            for part in parts:
-                part_lower = part.lower()
-                is_anamnesis = any(keyword in part_lower for keyword in anamnesis_keywords)
-                
-                if is_anamnesis:
-                    anamnesis.append(part)
-                else:
-                    complaints.append(part)
-        
+            if is_anamnesis:
+                anamnesis.append(part)
+            else:
+                complaints.append(part)
+
+        # Если жалобы не найдены, но есть части — добавляем их как жалобы
+        if not complaints and parts:
+            complaints = parts
+
         patient.complaints = complaints if complaints else ["Жалобы не указаны"]
         patient.medical_history = '; '.join(anamnesis) if anamnesis else None
 
