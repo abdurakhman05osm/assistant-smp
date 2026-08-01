@@ -30,6 +30,7 @@
         body.scale-1 { --font-base: 16px; }
         body.scale-2 { --font-base: 24px; }
         body.scale-3 { --font-base: 32px; }
+        /* Тёмная тема (если включена) */
         body.dark-mode {
             --bg-body: #1a202c;
             --bg-card: #2d3748;
@@ -372,7 +373,7 @@
             <input type="password" id="loginPassword" placeholder="Пароль" class="input-field mb-3">
             <button class="btn-primary" onclick="login()">Войти</button>
             <p class="text-center" style="margin-top:12px;color:var(--text-secondary);">
-                Нет аккаунта? <a href="#" onclick="showRegister()" style="color:var(--primary);font-weight:600;">Зарегистрироваться</a>
+                Нет аккаунта? <a href="#" onclick="showRegister()" style="color:#0c4a6e;font-weight:600;">Зарегистрироваться</a>
             </p>
         </div>
         <div id="registerForm" class="hidden">
@@ -384,7 +385,7 @@
             <input type="password" id="regPassword" placeholder="Пароль" class="input-field mb-3">
             <button class="btn-primary" onclick="register()">Зарегистрироваться</button>
             <p class="text-center" style="margin-top:12px;color:var(--text-secondary);">
-                Уже есть аккаунт? <a href="#" onclick="showLogin()" style="color:var(--primary);font-weight:600;">Войти</a>
+                Уже есть аккаунт? <a href="#" onclick="showLogin()" style="color:#0c4a6e;font-weight:600;">Войти</a>
             </p>
         </div>
     </div>
@@ -593,7 +594,6 @@ let documentData = {
     ecg: { images: [] }
 };
 
-// ===== АВТОРИЗАЦИЯ =====
 function showRegister() {
     document.getElementById('loginForm').classList.add('hidden');
     document.getElementById('registerForm').classList.remove('hidden');
@@ -669,7 +669,9 @@ function enterApp() {
     document.getElementById('appPage').classList.remove('hidden');
     user = JSON.parse(localStorage.getItem('user') || 'null');
     document.getElementById('userName').textContent = user?.username || '—';
-    setupRoles(user?.role || 'user');
+    // Принудительно показываем админские вкладки, если роль admin
+    const role = user?.role || 'user';
+    setupRoles(role);
     loadTemplates();
     loadHistory();
     loadUsers();
