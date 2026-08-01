@@ -4,21 +4,20 @@ from jose import jwt
 from passlib.context import CryptContext
 from app.core.config import settings
 from app.core.models.user import User, UserCreate, UserLogin, UserResponse
+from app.database import get_user_by_username, create_user, init_db, update_user_role, get_all_users
+from app.api.deps import get_current_admin
 import uuid
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
-# Временное хранилище пользователей (потом заменим на БД)
-_users_db = {}
+# Инициализация БД при первом импорте
+init_db()
 
 def get_user_by_username(username: str):
-    for u in _users_db.values():
-        if u.username == username:
-            return u
-    return None
+    return get_user_by_username(username)
 
-@router.post("/register", response_model=UserResponse)
+@router.post("/register")
 async def register(user_data: UserCreate):
     if get_user_by_username(user_data.username):
         raise HTTPException(status_code=400, detail="Username already exists")
@@ -26,20 +25,13 @@ async def register(user_data: UserCreate):
     user_id = str(uuid.uuid4())[:8]
     hashed = pwd_context.hash(user_data.password)
     
-    user = User(
+    create_user(user_id, user_data.username, user_data.email, hashed, role="user")
+    
+    return UserResponse(
         id=user_id,
         username=user_data.username,
         email=user_data.email,
-        hashed_password=hashed,
         role="user"
-    )
-    _users_db[user_id] = user
-    
-    return UserResponse(
-        id=user.id,
-        username=user.username,
-        email=user.email,
-        role=user.role
     )
 
 @router.post("/login")
@@ -74,3 +66,36 @@ async def login(user_data: UserLogin):
             role=user.role
         )
     }
+
+@router.post("/create-admin")
+async def create_admin():
+    existing_admin = get_user_by_username("admin")
+    if existing_admin:
+        raise HTTPException(status_code=400, detail="Admin already exists")
+    
+    user_id = str(uuid.uuid4())[:8]
+    hashed = pwd_context.hash("admin123")
+    create_user(user_id, "admin", "admin@system.ru", hashed, role="admin")
+    
+    return {"message": "Admin user created successfully"}
+
+@router.get("/users")
+async def list_users(current_user = Depends(get_current_admin)):
+    users = get_all_users()
+    return {"users": [dict(user) for user in users]}
+
+@router.put("/users/{username}/role")
+async def set_user_role(
+    username: str,
+    new_role: str,
+    current_user = Depends(get_current_admin)
+):
+    if new_role not in ["admin", "moderator", "user"]:
+        raise HTTPException(status_code=400, detail="Invalid role")
+    
+    user = get_user_by_username(username)
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    update_user_role(username, new_role)
+    return {"message": f"User {username} role updated to {new_role}"}

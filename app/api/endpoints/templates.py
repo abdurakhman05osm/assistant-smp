@@ -2,13 +2,12 @@ import os
 import shutil
 import uuid
 from fastapi import APIRouter, Depends, HTTPException, UploadFile, File
-from fastapi.responses import JSONResponse
 from typing import List, Optional
 from datetime import datetime
 from pydantic import BaseModel
-from app.api.deps import get_current_user
+from app.api.deps import get_current_user, get_current_admin, get_current_moderator
 from app.core.knowledge.template_loader import TemplateLoader
-from app.core.models.template import Template, TemplateMatch
+from app.core.models.template import Template, TemplateVitals
 
 router = APIRouter(prefix="/templates", tags=["templates"])
 
@@ -19,10 +18,8 @@ PARSED_DIR = os.path.join(TEMPLATES_DIR, "parsed")
 os.makedirs(RAW_DIR, exist_ok=True)
 os.makedirs(PARSED_DIR, exist_ok=True)
 
-# Временное хранилище загруженных шаблонов
 _loaded_templates = {}
 
-# ===== МОДЕЛИ ДЛЯ РУЧНОГО ДОБАВЛЕНИЯ =====
 class ManualTemplateRequest(BaseModel):
     mkb: Optional[str] = None
     diagnosis: str
@@ -38,19 +35,17 @@ class ManualTemplateResponse(BaseModel):
     complaints_count: int
     message: str
 
-# ===== ЗАГРУЗКА ФАЙЛОВ =====
 @router.post("/upload")
 async def upload_template(
     file: UploadFile = File(...),
-    current_user = Depends(get_current_user)
+    current_user = Depends(get_current_moderator)  # admin + moderator
 ):
-    """Загрузка шаблона из файла (PDF, DOCX, TXT)"""
     if not file.filename:
         raise HTTPException(status_code=400, detail="No file provided")
     
     ext = os.path.splitext(file.filename)[1].lower()
     if ext not in ['.txt', '.docx', '.pdf']:
-        raise HTTPException(status_code=400, detail="Unsupported file format. Use TXT, DOCX, or PDF.")
+        raise HTTPException(status_code=400, detail="Unsupported file format")
     
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
     safe_filename = f"{timestamp}_{file.filename}"
@@ -77,16 +72,14 @@ async def upload_template(
         "protocol": template.protocol[:200] + "..." if len(template.protocol) > 200 else template.protocol,
         "source": file.filename,
         "created_at": template.created_at.isoformat(),
-        "message": "Template uploaded and parsed successfully"
+        "message": "Template uploaded successfully"
     }
 
-# ===== РУЧНОЕ ДОБАВЛЕНИЕ =====
 @router.post("/manual", response_model=ManualTemplateResponse)
 async def add_template_manual(
     request: ManualTemplateRequest,
-    current_user = Depends(get_current_user)
+    current_user = Depends(get_current_moderator)  # admin + moderator
 ):
-    """Добавление шаблона вручную (без файла)"""
     if not request.diagnosis:
         raise HTTPException(status_code=400, detail="Diagnosis is required")
     if not request.complaints:
@@ -94,7 +87,6 @@ async def add_template_manual(
     
     template_id = str(uuid.uuid4())[:8]
     
-    # Создаём объект шаблона
     template = Template(
         id=template_id,
         source="manual",
@@ -105,14 +97,12 @@ async def add_template_manual(
         complaints=request.complaints,
         anamnesis=request.anamnesis,
         protocol=request.protocol,
-        vitals=TemplateVitals(),  # пустые витальные
-        raw_text=f"Ручное добавление: {request.diagnosis}"
+        vitals=TemplateVitals(),
+        raw_text=f"Manual: {request.diagnosis}"
     )
     
-    # Сохраняем в память
     _loaded_templates[template_id] = template
     
-    # Сохраняем в файл
     parsed_path = os.path.join(PARSED_DIR, f"{template_id}.json")
     with open(parsed_path, "w", encoding="utf-8") as f:
         f.write(template.model_dump_json(indent=2))
@@ -125,10 +115,8 @@ async def add_template_manual(
         message="Template added successfully"
     )
 
-# ===== СПИСОК ШАБЛОНОВ =====
 @router.get("/list")
 async def list_templates(current_user = Depends(get_current_user)):
-    """Список всех загруженных шаблонов"""
     templates = []
     for template in _loaded_templates.values():
         templates.append({
@@ -142,32 +130,51 @@ async def list_templates(current_user = Depends(get_current_user)):
         })
     return {"templates": templates}
 
-# ===== ПОЛУЧЕНИЕ ШАБЛОНА ПО ID =====
 @router.get("/{template_id}")
 async def get_template(template_id: str, current_user = Depends(get_current_user)):
-    """Получение шаблона по ID"""
     template = _loaded_templates.get(template_id)
     if not template:
         raise HTTPException(status_code=404, detail="Template not found")
     return template
 
-# ===== УДАЛЕНИЕ ШАБЛОНА =====
+@router.put("/{template_id}")
+async def update_template(
+    template_id: str,
+    request: ManualTemplateRequest,
+    current_user = Depends(get_current_admin)  # только admin
+):
+    if template_id not in _loaded_templates:
+        raise HTTPException(status_code=404, detail="Template not found")
+    
+    template = _loaded_templates[template_id]
+    template.diagnosis = request.diagnosis
+    template.icd10 = request.mkb
+    template.complaints = request.complaints
+    template.anamnesis = request.anamnesis
+    template.protocol = request.protocol
+    template.severity = request.severity
+    
+    parsed_path = os.path.join(PARSED_DIR, f"{template_id}.json")
+    with open(parsed_path, "w", encoding="utf-8") as f:
+        f.write(template.model_dump_json(indent=2))
+    
+    return {"message": "Template updated successfully"}
+
 @router.delete("/{template_id}")
-async def delete_template(template_id: str, current_user = Depends(get_current_user)):
-    """Удаление шаблона по ID"""
+async def delete_template(
+    template_id: str,
+    current_user = Depends(get_current_admin)  # только admin
+):
     if template_id not in _loaded_templates:
         raise HTTPException(status_code=404, detail="Template not found")
     
     del _loaded_templates[template_id]
     
-    # Удаляем файл, если он есть
     parsed_path = os.path.join(PARSED_DIR, f"{template_id}.json")
     if os.path.exists(parsed_path):
         os.remove(parsed_path)
     
     return {"message": "Template deleted successfully"}
 
-# ===== ВСПОМОГАТЕЛЬНАЯ ФУНКЦИЯ ДЛЯ ДРУГИХ МОДУЛЕЙ =====
 def get_all_templates():
-    """Возвращает все загруженные шаблоны"""
     return list(_loaded_templates.values())
