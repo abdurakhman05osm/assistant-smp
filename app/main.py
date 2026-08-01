@@ -8,7 +8,7 @@ import uuid
 from passlib.context import CryptContext
 
 from app.core.config import settings
-from app.api.endpoints import auth, templates, process, history
+from app.api.endpoints import auth, templates, process, history, game
 from app.database import init_db, get_user_by_username, create_user
 
 app = FastAPI(title=settings.APP_NAME, version=settings.VERSION)
@@ -22,26 +22,24 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Статика
 if os.path.exists("static"):
     app.mount("/static", StaticFiles(directory="static"), name="static")
 
-# Подключаем роутеры
 app.include_router(auth.router)
 app.include_router(templates.router)
 app.include_router(process.router)
 app.include_router(history.router)
+app.include_router(game.router)
 
 @app.on_event("startup")
-def startup():
-    """Создаём админа при первом запуске"""
-    init_db()
+async def startup():
+    await init_db()
     pwd_context = CryptContext(schemes=["pbkdf2_sha256"], deprecated="auto")
     
-    if not get_user_by_username("admin"):
+    if not await get_user_by_username("admin"):
         user_id = str(uuid.uuid4())[:8]
         hashed = pwd_context.hash("admin123")
-        create_user(user_id, "admin", "admin@system.ru", hashed, role="admin")
+        await create_user(user_id, "admin", "+79998887766", hashed, role="admin")
         print("✅ Admin user created: admin / admin123")
 
 @app.get("/", response_class=HTMLResponse)
@@ -56,4 +54,5 @@ async def health():
     return {"status": "ok", "version": settings.VERSION}
 
 if __name__ == "__main__":
-    uvicorn.run("app.main:app", host="0.0.0.0", port=8000, reload=True)
+    port = int(os.environ.get("PORT", 8000))
+    uvicorn.run("app.main:app", host="0.0.0.0", port=port, reload=True)

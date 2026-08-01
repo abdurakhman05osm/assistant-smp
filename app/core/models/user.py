@@ -4,21 +4,21 @@ from typing import Optional
 class User(BaseModel):
     id: str
     username: str
-    email: Optional[str] = None
+    phone: str  # +7XXXXXXXXXX
     hashed_password: str
-    role: str = "user"  # user / admin
+    role: str = "user"  # admin / moderator / user
 
 class UserCreate(BaseModel):
     username: str
-    email: Optional[str] = None
+    phone: str
     password: str
 
 class UserLogin(BaseModel):
-    username: str
+    login: str  # может быть username или phone
     password: str
 
 class UserResponse(BaseModel):
     id: str
     username: str
-    email: Optional[str] = None
+    phone: str
     role: str

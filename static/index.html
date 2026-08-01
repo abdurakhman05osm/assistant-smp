@@ -2,957 +2,589 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Assistant SMP Web</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=3.0, user-scalable=yes">
+    <title>Assistant SMP</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🚑</text></svg>">
     <style>
-        * { box-sizing: border-box; }
-        body { transition: background 0.3s, color 0.3s; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
-        
-        .theme-light {
-            --bg-body: #f3f4f6;
+        :root {
+            --primary: #0c4a6e;
+            --primary-light: #e8f0fe;
+            --primary-dark: #082f4a;
+            --bg-body: #f5f9ff;
             --bg-card: #ffffff;
-            --bg-input: #ffffff;
-            --bg-section: #f8fafc;
             --text-primary: #1f2937;
-            --text-secondary: #6b7280;
-            --border-color: #e5e7eb;
-            --shadow: 0 10px 15px -3px rgba(0,0,0,0.1);
+            --text-secondary: #4b5563;
+            --border-color: #d1d9e6;
+            --shadow: 0 8px 24px rgba(12, 74, 110, 0.10);
+            --radius: 16px;
+            --font-base: 16px;
         }
-        .theme-medical {
-            --bg-body: #e8f0fe;
-            --bg-card: #ffffff;
-            --bg-input: #f8fafc;
-            --bg-section: #f0f7ff;
-            --text-primary: #0c4a6e;
-            --text-secondary: #475569;
-            --border-color: #93c5fd;
-            --shadow: 0 10px 15px -3px rgba(30, 58, 138, 0.15);
-        }
-        .theme-dark {
-            --bg-body: #0f172a;
-            --bg-card: #1e293b;
-            --bg-input: #334155;
-            --bg-section: #1e293b;
-            --text-primary: #f1f5f9;
-            --text-secondary: #94a3b8;
-            --border-color: #475569;
-            --shadow: 0 10px 15px -3px rgba(0,0,0,0.5);
-        }
-        
         body {
+            font-size: var(--font-base);
             background: var(--bg-body);
             color: var(--text-primary);
-            transition: all 0.3s ease;
+            transition: font-size 0.2s ease;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            line-height: 1.6;
         }
+        body.scale-1 { --font-base: 16px; }
+        body.scale-2 { --font-base: 24px; }
+        body.scale-3 { --font-base: 32px; }
+
         .card {
             background: var(--bg-card);
-            border-color: var(--border-color);
+            border-radius: var(--radius);
             box-shadow: var(--shadow);
-            transition: all 0.3s ease;
-            border-radius: 16px;
-        }
-        .card input, .card textarea, .card select {
-            background: var(--bg-input);
-            color: var(--text-primary);
-            border-color: var(--border-color);
-        }
-        .section-bg {
-            background: var(--bg-section);
-            border-color: var(--border-color);
-        }
-        .bg-input { background: var(--bg-input); }
-        
-        .theme-dark .bg-gray-50 { background: #1e293b !important; }
-        .theme-dark .bg-blue-50 { background: #1e293b !important; }
-        .theme-dark .bg-red-50 { background: #2d1a1a !important; }
-        .theme-dark .bg-yellow-50 { background: #2d251a !important; }
-        .theme-dark .bg-green-50 { background: #1a2d1a !important; }
-        .theme-dark .text-gray-500 { color: #94a3b8 !important; }
-        .theme-dark .text-gray-600 { color: #94a3b8 !important; }
-        .theme-dark .text-gray-700 { color: #cbd5e1 !important; }
-        .theme-dark .border-gray-300 { border-color: #334155 !important; }
-        .theme-dark .border-blue-200 { border-color: #1e3a5f !important; }
-        .theme-dark .border-red-300 { border-color: #5f1e1e !important; }
-        .theme-dark .border-green-500 { border-color: #22c55e !important; }
-        .theme-dark .border-blue-500 { border-color: #3b82f6 !important; }
-        .theme-dark .border-orange-500 { border-color: #f59e0b !important; }
-        .theme-dark .section-bg { background: #1e293b !important; border-color: #334155 !important; }
-        .theme-dark .card { background: #1e293b !important; border-color: #334155 !important; }
-        .theme-dark .upload-zone { background: #1e293b !important; border-color: #334155 !important; }
-        .theme-dark .upload-zone:hover { background: #2d3748 !important; }
-        .theme-dark .photo-btn { background: #1e293b !important; border-color: #334155 !important; color: #f1f5f9 !important; }
-        .theme-dark .photo-btn:hover { background: #2d3748 !important; border-color: #3b82f6 !important; }
-        .theme-dark .tab:not(.active) { color: #94a3b8 !important; }
-        .theme-dark .tab.active { color: #60a5fa !important; background: #1e293b !important; }
-        .theme-dark .modal-content { background: #1e293b !important; }
-        .theme-dark .modal-header { border-color: #334155 !important; }
-        .theme-dark .document-data { background: #1e293b !important; border-color: #334155 !important; }
-        .theme-dark .document-data .field { border-color: #334155 !important; }
-        .theme-dark .document-data .field .value { color: #f1f5f9 !important; }
-        .theme-dark .ocr-result { background: #1a2d1a !important; border-color: #166534 !important; color: #86efac !important; }
-        .theme-dark .template-item { background: #1e293b !important; border-color: #334155 !important; }
-        .theme-dark .template-item:hover { background: #2d3748 !important; }
-        .theme-dark #resultContainer .bg-gray-50 { background: #1e293b !important; }
-        .theme-dark #resultContainer .border { border-color: #334155 !important; }
-        .theme-dark .glasgow-result { background: #1e293b !important; color: #60a5fa !important; }
-        .theme-dark .diagnosis-card { background: #1e293b !important; }
-        .theme-dark .diagnosis-card.selected { background: #2d3748 !important; border-color: #60a5fa !important; }
-        .theme-dark .question-item { background: #1e293b !important; border-color: #334155 !important; }
-        .theme-dark .vital-card { background: #1e293b !important; border-color: #334155 !important; }
-        .theme-dark .vital-card:hover { border-color: #60a5fa !important; }
-        .theme-dark .edit-modal { background: #1e293b !important; }
-        .theme-dark .history-card { background: #1e293b !important; border-color: #334155 !important; }
-        .theme-dark .history-card:hover { border-color: #60a5fa !important; }
-        .theme-dark .photo-item { background: #1e293b !important; border-color: #334155 !important; }
-        .theme-dark .photo-grid .photo-item .photo-label { background: rgba(0,0,0,0.8) !important; }
-        
-        .status-badge { font-size: 0.65rem; padding: 2px 10px; border-radius: 20px; display: inline-block; }
-        .status-verified { background: #dcfce7; color: #166534; }
-        .status-extracted { background: #fef9c3; color: #854d0e; }
-        .status-unknown { background: #f3f4f6; color: #4b5563; }
-        .theme-dark .status-unknown { background: #334155; color: #94a3b8; }
-        
-        .red-flag { background: #fee2e2; border-left: 4px solid #ef4444; }
-        .theme-dark .red-flag { background: #451a1a; border-left-color: #ef4444; color: #fca5a5; }
-        
-        .diagnosis-card {
-            transition: all 0.3s ease;
-            cursor: pointer;
-            border: 2px solid transparent;
-            background: var(--bg-card);
-            border-radius: 10px;
-            padding: 14px 16px;
-            margin-bottom: 8px;
-        }
-        .diagnosis-card:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(0,0,0,0.12); }
-        .diagnosis-card.selected { border-color: #3b82f6; background: #eff6ff; }
-        .diagnosis-card .probability-bar { height: 6px; border-radius: 3px; background: #e5e7eb; overflow: hidden; margin-top: 4px; }
-        .diagnosis-card .probability-bar .fill { height: 100%; border-radius: 3px; transition: width 0.8s ease; }
-        
-        .severity-critical { border-left: 4px solid #dc2626 !important; }
-        .severity-high { border-left: 4px solid #f59e0b !important; }
-        .severity-medium { border-left: 4px solid #3b82f6 !important; }
-        .severity-low { border-left: 4px solid #22c55e !important; }
-        .theme-dark .severity-critical { border-left-color: #ef4444 !important; }
-        .theme-dark .severity-high { border-left-color: #f59e0b !important; }
-        .theme-dark .severity-medium { border-left-color: #60a5fa !important; }
-        .theme-dark .severity-low { border-left-color: #4ade80 !important; }
-        
-        .protocol-details {
-            display: none;
-            margin-top: 10px;
-            padding: 12px 16px;
-            background: var(--bg-section);
-            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 16px;
             border: 1px solid var(--border-color);
-        }
-        .protocol-details.open { display: block; }
-        
-        .question-item {
-            background: var(--bg-section);
-            border-radius: 10px;
-            padding: 12px 16px;
-            border: 1px solid var(--border-color);
-            transition: all 0.4s ease;
-            margin-bottom: 8px;
-        }
-        .question-item.answered {
-            display: none;
-        }
-        .question-item .quick-values {
-            display: flex;
-            gap: 6px;
-            flex-wrap: wrap;
-            margin-top: 4px;
-        }
-        .question-item .quick-values button {
-            padding: 2px 10px;
-            border-radius: 12px;
-            border: 1px solid var(--border-color);
-            background: var(--bg-input);
-            color: var(--text-primary);
-            font-size: 0.75rem;
-            cursor: pointer;
             transition: all 0.2s;
         }
-        .question-item .quick-values button:hover {
-            background: #3b82f6;
+        .card:hover { box-shadow: 0 12px 32px rgba(12, 74, 110, 0.15); }
+
+        .btn-primary {
+            background: var(--primary);
             color: white;
-            border-color: #3b82f6;
-        }
-        .question-item input {
-            border: 1px solid #d1d5db;
-            border-radius: 8px;
-            padding: 6px 12px;
-            font-size: 0.9rem;
-            flex: 1;
-            min-width: 120px;
-            background: var(--bg-input);
-            color: var(--text-primary);
-        }
-        .question-item input:focus {
-            outline: none;
-            border-color: #3b82f6;
-            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
-        }
-        .question-item .btn-submit {
-            background: #3b82f6;
-            color: white;
+            padding: 12px 24px;
+            border-radius: 10px;
             border: none;
-            border-radius: 8px;
-            padding: 6px 16px;
-            font-size: 0.85rem;
+            font-weight: 600;
+            font-size: 1rem;
             cursor: pointer;
-            transition: background 0.2s;
-            white-space: nowrap;
+            transition: all 0.2s;
+            width: 100%;
+            min-height: 48px;
         }
-        .question-item .btn-submit:hover { background: #2563eb; }
-        .question-item .btn-submit:disabled { background: #9ca3af; cursor: not-allowed; }
-        .question-item .flex-row { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
-        
-        .vital-card {
-            display: inline-flex;
+        .btn-primary:hover { background: var(--primary-dark); transform: scale(1.02); }
+        .btn-primary:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+
+        .btn-outline {
+            background: transparent;
+            color: var(--primary);
+            padding: 10px 20px;
+            border-radius: 10px;
+            border: 2px solid var(--primary);
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            min-height: 44px;
+        }
+        .btn-outline:hover { background: var(--primary-light); }
+
+        .btn-danger {
+            background: #dc2626;
+            color: white;
+            padding: 8px 16px;
+            border-radius: 8px;
+            border: none;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            min-height: 40px;
+        }
+        .btn-danger:hover { background: #b91c1c; }
+
+        .input-field {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid var(--border-color);
+            border-radius: 10px;
+            font-size: 1rem;
+            background: white;
+            transition: all 0.2s;
+            min-height: 48px;
+        }
+        .input-field:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(12, 74, 110, 0.15);
+        }
+
+        .header {
+            background: var(--primary);
+            color: white;
+            padding: 12px 20px;
+            border-radius: 0 0 var(--radius) var(--radius);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        .header .logo {
+            font-size: 1.4rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            cursor: pointer;
+            transition: opacity 0.2s;
+        }
+        .header .logo:hover { opacity: 0.85; }
+        .header .logo span { font-size: 1.8rem; }
+        .header-actions {
+            display: flex;
             align-items: center;
             gap: 8px;
-            padding: 6px 14px;
-            background: var(--bg-section);
-            border-radius: 10px;
-            border: 2px solid var(--border-color);
-            transition: all 0.3s ease;
-            cursor: pointer;
-            position: relative;
-            margin: 2px;
+            flex-wrap: wrap;
         }
-        .vital-card:hover {
-            border-color: #3b82f6;
-            transform: translateY(-2px);
-        }
-        .vital-card .icon { font-size: 1.3rem; }
-        .vital-card .value { font-weight: 700; font-size: 1rem; }
-        .vital-card .label { font-size: 0.65rem; color: var(--text-secondary); }
-        .vital-card .edit-hint {
-            position: absolute;
-            top: -6px;
-            right: -6px;
-            background: #3b82f6;
+        .header-actions button {
+            background: rgba(255,255,255,0.15);
+            border: 1px solid rgba(255,255,255,0.3);
             color: white;
-            border-radius: 50%;
-            width: 18px;
-            height: 18px;
-            font-size: 0.6rem;
+            padding: 8px 14px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 1.1rem;
+            transition: all 0.2s;
+            min-height: 44px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .header-actions button:hover { background: rgba(255,255,255,0.25); }
+
+        .tabs {
+            display: flex;
+            gap: 4px;
+            flex-wrap: wrap;
+            margin-bottom: 16px;
+            background: var(--bg-card);
+            padding: 6px;
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            border: 1px solid var(--border-color);
+        }
+        .tab {
+            padding: 10px 16px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.2s;
+            font-size: 0.95rem;
+            background: transparent;
+            border: none;
+            color: var(--text-secondary);
+            flex: 1;
+            text-align: center;
+            min-height: 44px;
             display: flex;
             align-items: center;
             justify-content: center;
-            opacity: 0;
-            transition: opacity 0.3s;
+            gap: 6px;
         }
-        .vital-card:hover .edit-hint { opacity: 1; }
-        .vital-card.updated { animation: pulse-green 0.6s ease; }
-        
-        @keyframes pulse-green {
-            0% { transform: scale(1); }
-            20% { transform: scale(1.08); border-color: #22c55e; }
-            40% { transform: scale(1.04); }
-            60% { transform: scale(1.06); }
-            80% { transform: scale(1.02); }
-            100% { transform: scale(1); }
+        .tab.active {
+            background: var(--primary);
+            color: white;
         }
-        
+        .tab:not(.active):hover { background: var(--primary-light); }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+
+        .vital-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 10px;
+            margin-bottom: 16px;
+        }
+        .vital-card {
+            background: var(--bg-card);
+            border: 2px solid var(--border-color);
+            border-radius: 12px;
+            padding: 12px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .vital-card:hover { border-color: var(--primary); transform: translateY(-2px); }
+        .vital-card .icon { font-size: 1.8rem; display: block; }
+        .vital-card .value { font-weight: 700; font-size: 1.2rem; }
+        .vital-card .label { font-size: 0.8rem; color: var(--text-secondary); }
+
+        .diagnosis-card {
+            background: var(--bg-card);
+            border-left: 4px solid var(--primary);
+            border-radius: 10px;
+            padding: 14px 16px;
+            margin-bottom: 10px;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: 1px solid var(--border-color);
+        }
+        .diagnosis-card:hover { box-shadow: var(--shadow); }
+        .diagnosis-card .header { display: flex; justify-content: space-between; align-items: center; }
+        .diagnosis-card .name { font-weight: 600; }
+        .diagnosis-card .prob { font-weight: 700; color: var(--primary); }
+        .diagnosis-card .bar { height: 6px; background: #e5e7eb; border-radius: 3px; margin-top: 6px; overflow: hidden; }
+        .diagnosis-card .bar .fill { height: 100%; background: var(--primary); border-radius: 3px; transition: width 0.6s; }
+
+        .question-item {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            padding: 12px 16px;
+            margin-bottom: 8px;
+            transition: all 0.3s;
+        }
+        .question-item.answered { display: none; }
+        .question-item .flex-row { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+        .question-item .flex-row input { flex: 1; min-width: 120px; }
+        .quick-values { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 6px; }
+        .quick-values button {
+            padding: 4px 12px;
+            border-radius: 20px;
+            border: 1px solid var(--border-color);
+            background: white;
+            cursor: pointer;
+            font-size: 0.85rem;
+            transition: all 0.2s;
+        }
+        .quick-values button:hover { background: var(--primary); color: white; border-color: var(--primary); }
+
+        .footer {
+            margin-top: 30px;
+            padding: 20px;
+            background: var(--primary);
+            color: white;
+            border-radius: var(--radius) var(--radius) 0 0;
+            text-align: center;
+            font-size: 1rem;
+        }
+        .footer a { color: #93c5fd; text-decoration: none; }
+        .footer a:hover { text-decoration: underline; }
+        .footer .divider {
+            display: inline-block;
+            margin: 0 12px;
+            opacity: 0.4;
+            font-weight: 300;
+        }
+        .footer .icon { font-size: 1.2rem; margin-right: 6px; }
+
+        .mode-selector {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 12px;
+            flex-wrap: wrap;
+        }
+        .mode-selector button {
+            padding: 8px 16px;
+            border-radius: 20px;
+            border: 2px solid var(--border-color);
+            background: white;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.2s;
+            flex: 1;
+            min-height: 44px;
+        }
+        .mode-selector button.active {
+            border-color: var(--primary);
+            background: var(--primary-light);
+            color: var(--primary);
+        }
+        .mode-selector button:hover { border-color: var(--primary); }
+
         .modal-overlay {
             display: none;
             position: fixed;
             inset: 0;
-            background: rgba(0,0,0,0.5);
-            backdrop-filter: blur(4px);
-            z-index: 1000;
+            background: rgba(0,0,0,0.6);
+            z-index: 999;
             justify-content: center;
             align-items: center;
-            padding: 20px;
+            backdrop-filter: blur(4px);
         }
         .modal-overlay.open { display: flex; }
         .modal-content {
             background: var(--bg-card);
-            border-radius: 16px;
-            max-width: 900px;
+            border-radius: var(--radius);
+            max-width: 600px;
             width: 100%;
             max-height: 90vh;
-            overflow: hidden;
-            display: flex;
-            flex-direction: column;
-            box-shadow: 0 25px 50px rgba(0,0,0,0.3);
-        }
-        .modal-header {
-            padding: 16px 24px;
-            border-bottom: 1px solid var(--border-color);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-shrink: 0;
-        }
-        .modal-body { padding: 20px 24px; overflow-y: auto; flex: 1; }
-        .modal-close {
-            background: none;
-            border: none;
-            font-size: 1.5rem;
-            cursor: pointer;
-            color: var(--text-secondary);
-            padding: 4px 8px;
-            border-radius: 6px;
-            transition: background 0.2s;
-        }
-        .modal-close:hover { background: var(--border-color); }
-        
-        .edit-modal-overlay {
-            display: none;
-            position: fixed;
-            inset: 0;
-            background: rgba(0,0,0,0.5);
-            backdrop-filter: blur(4px);
-            z-index: 2000;
-            justify-content: center;
-            align-items: center;
+            overflow-y: auto;
             padding: 20px;
-        }
-        .edit-modal-overlay.open { display: flex; }
-        .edit-modal {
-            background: var(--bg-card);
-            border-radius: 16px;
-            max-width: 500px;
-            width: 100%;
-            padding: 24px;
-            box-shadow: 0 25px 50px rgba(0,0,0,0.3);
-            animation: fadeIn 0.3s ease;
-        }
-        .edit-modal .modal-title { font-size: 1.2rem; font-weight: 700; margin-bottom: 16px; }
-        .edit-modal input {
-            width: 100%;
-            padding: 10px 14px;
-            border: 2px solid var(--border-color);
-            border-radius: 8px;
-            font-size: 1rem;
-            background: var(--bg-input);
-            color: var(--text-primary);
-            transition: border-color 0.2s;
-        }
-        .edit-modal input:focus {
-            outline: none;
-            border-color: #3b82f6;
-        }
-        .edit-modal .btn-save {
-            background: #22c55e;
-            color: white;
-            border: none;
-            padding: 10px 24px;
-            border-radius: 8px;
-            font-size: 1rem;
-            cursor: pointer;
-            transition: background 0.2s;
-            margin-top: 12px;
-        }
-        .edit-modal .btn-save:hover { background: #16a34a; }
-        .edit-modal .btn-cancel {
-            background: #ef4444;
-            color: white;
-            border: none;
-            padding: 10px 24px;
-            border-radius: 8px;
-            font-size: 1rem;
-            cursor: pointer;
-            transition: background 0.2s;
-            margin-top: 12px;
-            margin-left: 8px;
-        }
-        .edit-modal .btn-cancel:hover { background: #dc2626; }
-        
-        .history-card {
-            padding: 12px 16px;
-            border: 1px solid var(--border-color);
-            border-radius: 10px;
-            cursor: pointer;
-            transition: all 0.2s;
-            background: var(--bg-card);
-            margin-bottom: 6px;
-        }
-        .history-card:hover {
-            transform: translateX(4px);
-            border-color: #3b82f6;
             box-shadow: var(--shadow);
         }
-        .history-card .severity-dot {
-            display: inline-block;
-            width: 10px;
-            height: 10px;
-            border-radius: 50%;
-            margin-right: 6px;
+
+        @media (max-width: 640px) {
+            .header .logo { font-size: 1.1rem; }
+            .header-actions button { padding: 6px 10px; font-size: 0.9rem; }
+            .tabs { overflow-x: auto; flex-wrap: nowrap; -webkit-overflow-scrolling: touch; }
+            .tab { flex: 0 0 auto; padding: 8px 14px; font-size: 0.85rem; }
+            .vital-grid { grid-template-columns: repeat(auto-fit, minmax(80px, 1fr)); gap: 6px; }
+            .card { padding: 14px; }
+            .footer { font-size: 0.85rem; padding: 16px; }
+            .modal-content { margin: 10px; padding: 14px; }
         }
-        .history-card .severity-dot.critical { background: #dc2626; }
-        .history-card .severity-dot.high { background: #f59e0b; }
-        .history-card .severity-dot.medium { background: #3b82f6; }
-        .history-card .severity-dot.low { background: #22c55e; }
-        .history-card .doc-icons { display: inline-flex; gap: 4px; margin-left: 8px; }
-        .history-card .doc-icons span { font-size: 1rem; }
-        
-        .doc-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 12px;
+        @media (max-width: 480px) {
+            .tab { font-size: 0.75rem; padding: 6px 10px; min-height: 40px; }
+            .btn-primary { font-size: 0.9rem; padding: 10px 16px; }
+            .input-field { font-size: 0.9rem; padding: 10px 12px; }
         }
-        .doc-card {
-            background: var(--bg-section);
-            border: 2px solid var(--border-color);
-            border-radius: 12px;
-            padding: 12px 14px;
-            transition: all 0.3s;
+        @media (min-width: 768px) {
+            .container { max-width: 900px; margin: 0 auto; padding: 0 20px; }
         }
-        .doc-card:hover { border-color: #3b82f6; }
-        .doc-card .doc-icon { font-size: 2rem; display: block; text-align: center; }
-        .doc-card .doc-title { font-weight: 600; text-align: center; margin: 4px 0; font-size: 0.9rem; }
-        .doc-card .doc-actions { display: flex; gap: 6px; justify-content: center; flex-wrap: wrap; margin-top: 6px; }
-        .doc-card .doc-actions button {
-            padding: 4px 12px;
-            border-radius: 8px;
-            border: 1px solid var(--border-color);
-            background: var(--bg-input);
-            color: var(--text-primary);
-            font-size: 0.75rem;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-        .doc-card .doc-actions button:hover {
-            background: #3b82f6;
-            color: white;
-            border-color: #3b82f6;
-        }
-        .doc-card .doc-preview { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 6px; }
-        .doc-card .doc-preview img {
-            width: 50px;
-            height: 50px;
-            object-fit: cover;
-            border-radius: 6px;
-            border: 1px solid var(--border-color);
-            cursor: pointer;
-        }
-        .doc-card .doc-preview img:hover { transform: scale(1.05); }
-        .doc-card .doc-toggle { font-size: 0.7rem; color: var(--text-secondary); cursor: pointer; text-align: center; margin-top: 4px; }
-        .doc-card .doc-toggle:hover { color: #3b82f6; }
-        
-        .template-form { display: grid; gap: 10px; }
-        .template-form input, .template-form textarea, .template-form select {
-            padding: 8px 12px;
-            border: 2px solid var(--border-color);
-            border-radius: 8px;
-            background: var(--bg-input);
-            color: var(--text-primary);
-        }
-        .template-form input:focus, .template-form textarea:focus {
-            outline: none;
-            border-color: #3b82f6;
-        }
-        .template-item {
-            padding: 10px 14px;
-            border: 1px solid var(--border-color);
-            border-radius: 10px;
-            margin-bottom: 6px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            background: var(--bg-card);
-        }
-        .template-item:hover { background: var(--bg-section); }
-        
-        .tab {
-            padding: 10px 20px;
-            border-radius: 10px 10px 0 0;
-            cursor: pointer;
-            transition: all 0.2s;
-            font-weight: 500;
-            border-bottom: 3px solid transparent;
-        }
-        .tab.active {
-            border-bottom-color: #3b82f6;
-            background: var(--bg-card);
-            color: #3b82f6;
-        }
-        .tab:not(.active):hover { background: var(--bg-section); }
-        .tab-content { display: none; }
-        .tab-content.active { display: block; }
-        
+
         .hidden { display: none !important; }
-        .fade-in { animation: fadeIn 0.4s ease-in; }
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(12px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        
-        .upload-zone {
-            border: 3px dashed var(--border-color);
-            border-radius: 16px;
-            padding: 30px 20px;
-            text-align: center;
-            transition: all 0.3s;
-            cursor: pointer;
-            background: var(--bg-section);
-        }
-        .upload-zone:hover, .upload-zone.dragover {
-            border-color: #3b82f6;
-            background: #eff6ff;
-        }
-        .theme-dark .upload-zone:hover { background: #1e293b; }
-        
-        .quick-btn {
-            padding: 4px 12px;
-            border-radius: 16px;
-            border: 1px solid var(--border-color);
-            background: var(--bg-input);
-            color: var(--text-primary);
-            font-size: 0.75rem;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-        .quick-btn:hover {
-            background: #3b82f6;
-            color: white;
-            border-color: #3b82f6;
-        }
-        
-        .btn-primary {
-            background: #3b82f6;
-            color: white;
-            padding: 10px 24px;
-            border-radius: 10px;
-            border: none;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-        .btn-primary:hover { background: #2563eb; transform: scale(1.02); }
-        .btn-primary:disabled { background: #9ca3af; cursor: not-allowed; transform: none; }
-        
-        .btn-green {
-            background: #22c55e;
-            color: white;
-            padding: 10px 24px;
-            border-radius: 10px;
-            border: none;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-        .btn-green:hover { background: #16a34a; }
-        
-        .btn-red {
-            background: #ef4444;
-            color: white;
-            padding: 6px 14px;
-            border-radius: 8px;
-            border: none;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-        .btn-red:hover { background: #dc2626; }
-        
-        .btn-outline {
-            background: transparent;
-            color: var(--text-primary);
-            padding: 6px 14px;
-            border-radius: 8px;
-            border: 2px solid var(--border-color);
-            font-weight: 500;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-        .btn-outline:hover { border-color: #3b82f6; color: #3b82f6; }
-        
-        .theme-toggle-btn {
-            background: none;
-            border: 1px solid var(--border-color);
-            border-radius: 8px;
-            padding: 6px 10px;
-            cursor: pointer;
-            font-size: 1.2rem;
-            transition: all 0.2s;
-            color: var(--text-primary);
-        }
-        .theme-toggle-btn:hover { background: var(--border-color); }
-        
-        .toast-container {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            z-index: 9999;
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-        }
-        .toast {
-            padding: 12px 20px;
-            border-radius: 12px;
-            color: white;
-            font-weight: 500;
-            animation: slideIn 0.3s ease;
-        }
-        .toast-success { background: #22c55e; }
-        .toast-error { background: #ef4444; }
-        .toast-info { background: #3b82f6; }
-        @keyframes slideIn {
-            from { opacity: 0; transform: translateX(100px); }
-            to { opacity: 1; transform: translateX(0); }
-        }
-        
-        .input-field {
-            width: 100%;
-            padding: 10px 14px;
-            border: 2px solid var(--border-color);
-            border-radius: 10px;
-            transition: border-color 0.2s;
-            background: var(--bg-input);
-            color: var(--text-primary);
-        }
-        .input-field:focus {
-            outline: none;
-            border-color: #3b82f6;
-        }
-        
-        .photo-grid { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; }
-        .photo-item {
-            position: relative;
-            border: 2px solid var(--border-color);
-            border-radius: 8px;
-            overflow: hidden;
-            width: 70px;
-            height: 70px;
-            background: var(--bg-section);
-        }
-        .photo-item img { width: 100%; height: 100%; object-fit: cover; }
-        .photo-item .photo-label {
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            background: rgba(0,0,0,0.7);
-            color: white;
-            font-size: 0.5rem;
-            padding: 1px 4px;
-            text-align: center;
-        }
-        .photo-item .remove-photo {
-            position: absolute;
-            top: 2px;
-            right: 2px;
-            background: #ef4444;
-            color: white;
-            border: none;
-            border-radius: 50%;
-            width: 18px;
-            height: 18px;
-            font-size: 0.6rem;
-            cursor: pointer;
-        }
-        .photo-item .remove-photo:hover { background: #dc2626; }
-        
-        .document-data {
-            background: var(--bg-section);
-            border-radius: 8px;
-            padding: 10px 14px;
-            border: 1px solid var(--border-color);
-            margin-top: 6px;
-        }
-        .document-data .field {
-            display: flex;
-            justify-content: space-between;
-            padding: 3px 0;
-            border-bottom: 1px solid var(--border-color);
-        }
-        .document-data .field:last-child { border-bottom: none; }
-        .document-data .field .label { font-weight: 500; color: var(--text-secondary); font-size: 0.85rem; }
-        .document-data .field .value { font-weight: 600; font-size: 0.9rem; }
-        
-        .patient-info-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 10px;
-            margin-bottom: 12px;
-        }
-        .patient-info-grid .field-group label {
-            font-size: 0.75rem;
-            color: var(--text-secondary);
-            display: block;
-            margin-bottom: 2px;
-        }
-        .patient-info-grid .field-group input {
-            width: 100%;
-            padding: 6px 10px;
-            border: 2px solid var(--border-color);
-            border-radius: 8px;
-            background: var(--bg-input);
-            color: var(--text-primary);
-            font-size: 0.9rem;
-        }
-        .patient-info-grid .field-group input:focus {
-            outline: none;
-            border-color: #3b82f6;
-        }
+        .text-center { text-align: center; }
+        .mt-2 { margin-top: 8px; }
+        .mt-4 { margin-top: 16px; }
+        .mb-3 { margin-bottom: 12px; }
+        .gap-2 { gap: 8px; }
+        .flex-wrap { flex-wrap: wrap; }
+        .flex-center { display: flex; align-items: center; justify-content: center; }
+        .w-full { width: 100%; }
     </style>
 </head>
 <body>
-
-<!-- ===== СТРАНИЦА АВТОРИЗАЦИИ ===== -->
-<div id="authPage" class="max-w-md mx-auto mt-20 p-8 card">
-    <h1 class="text-2xl font-bold text-center mb-2">🚑 Assistant SMP</h1>
-    <p class="text-center text-gray-500 text-sm mb-6">Войдите или зарегистрируйтесь</p>
-    
-    <div id="loginForm">
-        <input type="text" id="loginUsername" placeholder="Имя пользователя" class="input-field mb-3">
-        <input type="password" id="loginPassword" placeholder="Пароль" class="input-field mb-3">
-        <button class="btn-primary w-full" onclick="login()">Войти</button>
-        <p class="text-center text-sm text-gray-500 mt-3">
-            Нет аккаунта? <a href="#" onclick="showRegister()" class="text-blue-600">Зарегистрироваться</a>
-        </p>
-    </div>
-    
-    <div id="registerForm" class="hidden">
-        <input type="text" id="regUsername" placeholder="Имя пользователя" class="input-field mb-3">
-        <input type="email" id="regEmail" placeholder="Email" class="input-field mb-3">
-        <input type="password" id="regPassword" placeholder="Пароль" class="input-field mb-3">
-        <button class="btn-primary w-full" onclick="register()">Зарегистрироваться</button>
-        <p class="text-center text-sm text-gray-500 mt-3">
-            Уже есть аккаунт? <a href="#" onclick="showLogin()" class="text-blue-600">Войти</a>
-        </p>
-    </div>
-</div>
-
-<!-- ===== ОСНОВНОЕ ПРИЛОЖЕНИЕ ===== -->
-<div id="appPage" class="max-w-6xl mx-auto p-4 hidden">
-    <!-- Шапка -->
-    <div class="flex justify-between items-center mb-4 flex-wrap gap-3">
-        <div class="flex items-center gap-3">
-            <h1 class="text-2xl font-bold">🚑 Assistant SMP</h1>
-            <span class="text-sm text-gray-500">v2.0</span>
-        </div>
-        <div class="flex items-center gap-3">
-            <span class="text-sm" id="userName">—</span>
-            <button class="theme-toggle-btn" onclick="toggleTheme()">🎨</button>
-            <button class="btn-red" onclick="logout()">Выйти</button>
-        </div>
-    </div>
-
-    <!-- Вкладки -->
-    <div class="flex gap-1 border-b mb-4" style="border-color: var(--border-color);">
-        <div class="tab active" data-tab="chat" onclick="switchTab('chat')">💬 Чат</div>
-        <div class="tab" data-tab="documents" onclick="switchTab('documents')">📄 Документы</div>
-        <div class="tab" data-tab="templates" onclick="switchTab('templates')">📂 Шаблоны</div>
-        <div class="tab" data-tab="history" onclick="switchTab('history')">📋 История</div>
-        <div class="tab" data-tab="game" onclick="switchTab('game')">🎮 Игра</div>
-    </div>
-
-    <!-- ===== ВКЛАДКА: ЧАТ ===== -->
-    <div id="tab-chat" class="tab-content active">
-        <div class="card p-6">
-            <!-- Поля для ФИО и даты рождения -->
-            <div class="patient-info-grid">
-                <div class="field-group">
-                    <label>👤 ФИО пациента</label>
-                    <input type="text" id="patientFio" placeholder="Введите ФИО...">
-                </div>
-                <div class="field-group">
-                    <label>📅 Дата рождения</label>
-                    <input type="text" id="patientBirth" placeholder="ДД.ММ.ГГГГ">
-                </div>
-                <div class="field-group" style="grid-column: span 2;">
-                    <label>🏠 Адрес регистрации</label>
-                    <input type="text" id="patientAddress" placeholder="Введите адрес...">
-                </div>
+<div class="container" id="app">
+    <!-- АВТОРИЗАЦИЯ -->
+    <div id="authPage" class="card" style="max-width:420px;margin:40px auto;">
+        <h1 class="text-center" style="font-size:1.8rem;font-weight:700;margin-bottom:8px;">🚑 Assistant SMP</h1>
+        <p class="text-center" style="color:var(--text-secondary);">Войдите или зарегистрируйтесь</p>
+        
+        <div id="loginForm">
+            <div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap;">
+                <button id="loginTypePhone" class="btn-outline" style="flex:1;text-align:center;">📱 По номеру</button>
+                <button id="loginTypeUsername" class="btn-outline" style="flex:1;text-align:center;">👤 По логину</button>
             </div>
-            
-            <textarea id="inputText" rows="4" class="input-field" placeholder="Введите описание пациента...&#10;Пример: Мужчина 64 года, давит за грудиной, АД 180/90, ЧСС 110">Мужчина 64 года, давит за грудиной, АД 180/90, ЧСС 110</textarea>
-            <button class="btn-primary w-full mt-3" onclick="analyze()">🔍 Извлечь данные и провести анализ</button>
-            
-            <div id="resultContainer" class="hidden mt-4">
-                <div id="analysisResult" class="space-y-3"></div>
-                <button class="btn-green w-full mt-4" onclick="saveCall()">💾 Сохранить вызов в историю</button>
+            <input type="text" id="loginInput" placeholder="Номер телефона (+7...)" class="input-field mb-3">
+            <input type="password" id="loginPassword" placeholder="Пароль" class="input-field mb-3">
+            <button class="btn-primary" onclick="login()">Войти</button>
+            <p class="text-center" style="margin-top:12px;color:var(--text-secondary);">
+                Нет аккаунта? <a href="#" onclick="showRegister()" style="color:var(--primary);font-weight:600;">Зарегистрироваться</a>
+            </p>
+        </div>
+
+        <div id="registerForm" class="hidden">
+            <input type="text" id="regUsername" placeholder="Имя пользователя (логин)" class="input-field mb-3">
+            <div style="display:flex;align-items:center;gap:6px;margin-bottom:12px;">
+                <span style="background:var(--border-color);padding:12px 14px;border-radius:10px;font-weight:600;min-height:48px;display:flex;align-items:center;">+7</span>
+                <input type="tel" id="regPhone" placeholder="XXX XXX XX XX" class="input-field" style="flex:1;">
+            </div>
+            <input type="password" id="regPassword" placeholder="Пароль" class="input-field mb-3">
+            <button class="btn-primary" onclick="register()">Зарегистрироваться</button>
+            <p class="text-center" style="margin-top:12px;color:var(--text-secondary);">
+                Уже есть аккаунт? <a href="#" onclick="showLogin()" style="color:var(--primary);font-weight:600;">Войти</a>
+            </p>
+        </div>
+    </div>
+
+    <!-- ОСНОВНОЕ ПРИЛОЖЕНИЕ -->
+    <div id="appPage" class="hidden">
+        <!-- ШАПКА -->
+        <div class="header">
+            <div class="logo" onclick="goHome()">
+                <span>🚑</span> Assistant SMP
+            </div>
+            <div class="header-actions">
+                <button onclick="toggleScale()" title="Увеличение для слабовидящих">🕶️ <span id="scaleLabel">1x</span></button>
+                <button onclick="toggleTheme()" title="Сменить тему">🎨</button>
+                <button onclick="logout()" title="Выйти">🚪</button>
             </div>
         </div>
-    </div>
 
-    <!-- ===== ВКЛАДКА: ДОКУМЕНТЫ ===== -->
-    <div id="tab-documents" class="tab-content">
-        <div class="card p-6">
-            <h2 class="text-xl font-bold mb-4">📄 Документы пациента</h2>
-            <div class="doc-grid">
-                <div class="doc-card">
-                    <span class="doc-icon">🪪</span>
-                    <div class="doc-title">Паспорт</div>
-                    <div class="doc-actions">
-                        <button onclick="captureDocument('passport')">📷 Снять</button>
-                        <button onclick="document.getElementById('passportInput').click()">📁 Прикрепить</button>
-                        <input type="file" id="passportInput" accept="image/*" class="hidden" onchange="processDocumentFile(event, 'passport')">
-                    </div>
-                    <div id="passportPreview" class="doc-preview"></div>
-                    <div id="passportData" class="document-data hidden">
-                        <div class="field"><span class="label">ФИО</span><span class="value" id="passportFio">—</span></div>
-                        <div class="field"><span class="label">Дата рождения</span><span class="value" id="passportBirth">—</span></div>
-                        <div class="field"><span class="label">Адрес регистрации</span><span class="value" id="passportAddress">—</span></div>
-                        <div class="field"><span class="label">Серия/номер</span><span class="value" id="passportNumber">—</span></div>
-                    </div>
-                    <div class="doc-toggle" onclick="document.getElementById('passportData').classList.toggle('hidden')">✏️ Редактировать вручную</div>
-                    <div class="doc-toggle" style="margin-top:2px;">
-                        <button class="btn-outline text-xs" onclick="document.getElementById('passportRegInput').click()">📸 Фото регистрации</button>
-                        <input type="file" id="passportRegInput" accept="image/*" class="hidden" onchange="processDocumentFile(event, 'passport_reg')">
-                    </div>
+        <!-- ВКЛАДКИ -->
+        <div class="tabs" id="tabsContainer">
+            <button class="tab active" data-tab="chat" onclick="switchTab('chat')">💬 Чат</button>
+            <button class="tab" data-tab="documents" onclick="switchTab('documents')">📄 Документы</button>
+            <button class="tab" data-tab="history" onclick="switchTab('history')">📋 История</button>
+            <button class="tab tab-game" data-tab="game" onclick="switchTab('game')">🎮 Игра</button>
+            <button class="tab tab-templates" data-tab="templates" onclick="switchTab('templates')" style="display:none;">📂 Шаблоны</button>
+            <button class="tab tab-users" data-tab="users" onclick="switchTab('users')" style="display:none;">👥 Пользователи</button>
+        </div>
+
+        <!-- ЧАТ -->
+        <div id="tab-chat" class="tab-content active">
+            <div class="card">
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px;">
+                    <input type="text" id="patientFio" placeholder="ФИО пациента" class="input-field">
+                    <input type="text" id="patientBirth" placeholder="Дата рождения" class="input-field">
+                    <input type="text" id="patientAddress" placeholder="Адрес" class="input-field" style="grid-column:span 2;">
                 </div>
-
-                <div class="doc-card">
-                    <span class="doc-icon" id="omsIcon">🩺</span>
-                    <div class="doc-title" id="omsTitle">Полис ОМС</div>
-                    <div class="doc-actions">
-                        <button onclick="captureDocument('oms')">📷 Снять</button>
-                        <button onclick="document.getElementById('omsInput').click()">📁 Прикрепить</button>
-                        <input type="file" id="omsInput" accept="image/*" class="hidden" onchange="processDocumentFile(event, 'oms')">
-                        <button class="btn-outline text-xs" onclick="toggleOmsType()">🔄 СНИЛС</button>
-                    </div>
-                    <div id="omsPreview" class="doc-preview"></div>
-                    <div id="omsData" class="document-data hidden">
-                        <div class="field"><span class="label" id="omsLabel">Номер полиса</span><span class="value" id="omsNumber">—</span></div>
-                    </div>
-                    <div class="doc-toggle" onclick="document.getElementById('omsData').classList.toggle('hidden')">✏️ Редактировать вручную</div>
-                </div>
-
-                <div class="doc-card">
-                    <span class="doc-icon">✍️</span>
-                    <div class="doc-title">Подпись пациента</div>
-                    <div class="doc-actions">
-                        <button onclick="captureDocument('signature')">📷 Снять</button>
-                        <button onclick="document.getElementById('signatureInput').click()">📁 Прикрепить</button>
-                        <input type="file" id="signatureInput" accept="image/*" class="hidden" onchange="processDocumentFile(event, 'signature')">
-                    </div>
-                    <div id="signaturePreview" class="doc-preview"></div>
-                </div>
-
-                <div class="doc-card">
-                    <span class="doc-icon">❤️</span>
-                    <div class="doc-title">ЭКГ (до 4 фото)</div>
-                    <div class="doc-actions">
-                        <button onclick="captureDocument('ecg')">📷 Снять</button>
-                        <button onclick="document.getElementById('ecgInput').click()">📁 Прикрепить</button>
-                        <input type="file" id="ecgInput" accept="image/*" multiple class="hidden" onchange="processDocumentFile(event, 'ecg')">
-                    </div>
-                    <div id="ecgPreview" class="doc-preview"></div>
+                <textarea id="inputText" rows="4" class="input-field" placeholder="Введите описание пациента..."></textarea>
+                <button class="btn-primary mt-2" onclick="analyze()">🔍 Извлечь данные и провести анализ</button>
+                <div id="resultContainer" class="hidden mt-4">
+                    <div id="analysisResult"></div>
+                    <button class="btn-primary mt-2" onclick="saveCall()" style="background:#16a34a;">💾 Сохранить вызов</button>
                 </div>
             </div>
         </div>
-    </div>
 
-    <!-- ===== ВКЛАДКА: ШАБЛОНЫ ===== -->
-    <div id="tab-templates" class="tab-content">
-        <div class="card p-6">
-            <h2 class="text-xl font-bold mb-4">📂 Управление шаблонами</h2>
-            
-            <div class="p-4 border rounded-xl section-bg mb-4">
-                <h3 class="font-semibold mb-3">➕ Добавить шаблон вручную</h3>
-                <div class="template-form">
-                    <input type="text" id="templateMkb" placeholder="МКБ-10 (например: I20.0)">
-                    <input type="text" id="templateDiagnosis" placeholder="Диагноз">
-                    <textarea id="templateComplaints" rows="2" placeholder="Жалобы (каждая с новой строки)"></textarea>
-                    <textarea id="templateAnamnesis" rows="2" placeholder="Анамнез"></textarea>
-                    <textarea id="templateProtocol" rows="3" placeholder="Протокол действий"></textarea>
-                    <select id="templateSeverity">
+        <!-- ДОКУМЕНТЫ -->
+        <div id="tab-documents" class="tab-content">
+            <div class="card">
+                <h2 style="font-weight:700;margin-bottom:12px;">📄 Документы пациента</h2>
+                <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;">
+                    <div class="card" style="text-align:center;">
+                        <span style="font-size:2.8rem;">🪪</span>
+                        <div style="font-weight:600;">Паспорт</div>
+                        <button class="btn-outline" style="width:100%;margin-top:6px;" onclick="captureDocument('passport')">📷 Снять</button>
+                        <button class="btn-outline" style="width:100%;margin-top:4px;" onclick="document.getElementById('passportInput').click()">📁 Прикрепить</button>
+                        <input type="file" id="passportInput" accept="image/*" class="hidden" onchange="processDocumentFile(event,'passport')">
+                        <div id="passportPreview" style="display:flex;flex-wrap:wrap;gap:4px;margin-top:6px;"></div>
+                    </div>
+                    <div class="card" style="text-align:center;">
+                        <span style="font-size:2.8rem;">🩺</span>
+                        <div style="font-weight:600;">Полис / СНИЛС</div>
+                        <button class="btn-outline" style="width:100%;margin-top:6px;" onclick="captureDocument('oms')">📷 Снять</button>
+                        <button class="btn-outline" style="width:100%;margin-top:4px;" onclick="document.getElementById('omsInput').click()">📁 Прикрепить</button>
+                        <input type="file" id="omsInput" accept="image/*" class="hidden" onchange="processDocumentFile(event,'oms')">
+                        <div id="omsPreview" style="display:flex;flex-wrap:wrap;gap:4px;margin-top:6px;"></div>
+                    </div>
+                    <div class="card" style="text-align:center;">
+                        <span style="font-size:2.8rem;">✍️</span>
+                        <div style="font-weight:600;">Подпись</div>
+                        <button class="btn-outline" style="width:100%;margin-top:6px;" onclick="captureDocument('signature')">📷 Снять</button>
+                        <button class="btn-outline" style="width:100%;margin-top:4px;" onclick="document.getElementById('signatureInput').click()">📁 Прикрепить</button>
+                        <input type="file" id="signatureInput" accept="image/*" class="hidden" onchange="processDocumentFile(event,'signature')">
+                        <div id="signaturePreview" style="display:flex;flex-wrap:wrap;gap:4px;margin-top:6px;"></div>
+                    </div>
+                    <div class="card" style="text-align:center;">
+                        <span style="font-size:2.8rem;">❤️</span>
+                        <div style="font-weight:600;">ЭКГ (до 4)</div>
+                        <button class="btn-outline" style="width:100%;margin-top:6px;" onclick="captureDocument('ecg')">📷 Снять</button>
+                        <button class="btn-outline" style="width:100%;margin-top:4px;" onclick="document.getElementById('ecgInput').click()">📁 Прикрепить</button>
+                        <input type="file" id="ecgInput" accept="image/*" multiple class="hidden" onchange="processDocumentFile(event,'ecg')">
+                        <div id="ecgPreview" style="display:flex;flex-wrap:wrap;gap:4px;margin-top:6px;"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ИСТОРИЯ -->
+        <div id="tab-history" class="tab-content">
+            <div class="card">
+                <h2 style="font-weight:700;margin-bottom:12px;">📋 История вызовов</h2>
+                <div id="historyList"><p style="color:var(--text-secondary);">Загрузка...</p></div>
+            </div>
+        </div>
+
+        <!-- ИГРА -->
+        <div id="tab-game" class="tab-content">
+            <div class="card">
+                <h2 style="font-weight:700;margin-bottom:12px;">🎮 Клинические кейсы</h2>
+                <div class="mode-selector">
+                    <button class="active" data-mode="diagnostic" onclick="setGameMode('diagnostic')">🩺 Диагностика</button>
+                    <button data-mode="emergency" onclick="setGameMode('emergency')">🚑 Экстренная</button>
+                    <button data-mode="training" onclick="setGameMode('training')">📖 Обучение</button>
+                </div>
+                <div id="gameContainer">
+                    <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:12px;">
+                        <span style="font-weight:600;">Счёт: <span id="gameScore" style="color:var(--primary);font-size:1.4rem;">0</span></span>
+                        <button class="btn-outline" onclick="newGameCase()">🎲 Новый кейс</button>
+                    </div>
+                    <div id="gameQuestion" class="card" style="background:var(--primary-light);border-color:var(--primary);">
+                        <p style="font-weight:500;">Нажмите «Новый кейс» для начала</p>
+                    </div>
+                    <div id="gameOptions" style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px;"></div>
+                    <div id="gameResult" class="hidden card" style="margin-top:12px;"></div>
+                </div>
+                <div id="addGameCaseForm" class="hidden card" style="margin-top:16px;border:2px dashed var(--primary);">
+                    <h3 style="font-weight:600;margin-bottom:8px;">➕ Добавить кейс</h3>
+                    <input type="text" id="gameTitle" placeholder="Название кейса" class="input-field mb-3">
+                    <textarea id="gameDescription" rows="3" placeholder="Описание ситуации" class="input-field mb-3"></textarea>
+                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+                        <input type="text" id="gameOpt1" placeholder="Вариант 1" class="input-field">
+                        <input type="text" id="gameOpt2" placeholder="Вариант 2" class="input-field">
+                        <input type="text" id="gameOpt3" placeholder="Вариант 3" class="input-field">
+                        <input type="text" id="gameOpt4" placeholder="Вариант 4" class="input-field">
+                    </div>
+                    <select id="gameCorrect" class="input-field mt-2">
+                        <option value="0">Правильный ответ: Вариант 1</option>
+                        <option value="1">Правильный ответ: Вариант 2</option>
+                        <option value="2">Правильный ответ: Вариант 3</option>
+                        <option value="3">Правильный ответ: Вариант 4</option>
+                    </select>
+                    <textarea id="gameProtocol" rows="3" placeholder="Протокол действий" class="input-field mt-2"></textarea>
+                    <button class="btn-primary mt-2" onclick="addGameCase()" style="background:#16a34a;">✅ Добавить кейс</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- ШАБЛОНЫ -->
+        <div id="tab-templates" class="tab-content">
+            <div class="card">
+                <h2 style="font-weight:700;margin-bottom:12px;">📂 Шаблоны (диагнозы, жалобы, анамнезы)</h2>
+                <div style="display:grid;gap:10px;margin-bottom:12px;">
+                    <input type="text" id="templateMkb" placeholder="МКБ-10" class="input-field">
+                    <input type="text" id="templateDiagnosis" placeholder="Диагноз" class="input-field">
+                    <textarea id="templateComplaints" rows="2" placeholder="Жалобы (каждая с новой строки)" class="input-field"></textarea>
+                    <textarea id="templateAnamnesis" rows="2" placeholder="Анамнез" class="input-field"></textarea>
+                    <textarea id="templateProtocol" rows="3" placeholder="Протокол" class="input-field"></textarea>
+                    <select id="templateSeverity" class="input-field">
                         <option value="critical">Критическое</option>
                         <option value="high">Высокий риск</option>
                         <option value="medium" selected>Средний риск</option>
                         <option value="low">Низкий риск</option>
                     </select>
-                    <button class="btn-green" onclick="addTemplateManually()">✅ Добавить шаблон</button>
+                    <button id="addTemplateBtn" class="btn-primary" onclick="addTemplateManually()" style="background:#16a34a;">✅ Добавить шаблон</button>
                 </div>
-            </div>
-            
-            <div class="upload-zone" id="uploadZone" onclick="document.getElementById('fileInput').click()">
-                <div class="text-4xl mb-2">📤</div>
-                <p class="font-medium">Нажмите или перетащите файлы для загрузки</p>
-                <p class="text-sm text-gray-500">Поддерживаются: TXT, DOCX, PDF</p>
-            </div>
-            <input type="file" id="fileInput" multiple accept=".txt,.docx,.pdf" class="hidden" onchange="uploadFiles(event)">
-            
-            <div class="mt-6">
-                <div class="flex justify-between items-center mb-3">
-                    <h3 class="font-semibold">Загруженные шаблоны</h3>
-                    <button class="btn-primary text-sm px-4 py-2" onclick="loadTemplates()">🔄 Обновить</button>
-                </div>
-                <div id="templatesList"><p class="text-gray-500 text-sm">Загрузка...</p></div>
+                <div id="templatesList"><p style="color:var(--text-secondary);">Загрузка...</p></div>
             </div>
         </div>
-    </div>
 
-    <!-- ===== ВКЛАДКА: ИСТОРИЯ ===== -->
-    <div id="tab-history" class="tab-content">
-        <div class="card p-6">
-            <h2 class="text-xl font-bold mb-4">📋 История вызовов</h2>
-            <div id="historyList"><p class="text-gray-500 text-sm">Загрузка...</p></div>
+        <!-- ПОЛЬЗОВАТЕЛИ -->
+        <div id="tab-users" class="tab-content">
+            <div class="card">
+                <h2 style="font-weight:700;margin-bottom:12px;">👥 Управление пользователями</h2>
+                <div id="usersList"><p style="color:var(--text-secondary);">Загрузка...</p></div>
+            </div>
         </div>
-    </div>
 
-    <!-- ===== ВКЛАДКА: ИГРА ===== -->
-    <div id="tab-game" class="tab-content">
-        <div class="card p-6">
-            <h2 class="text-xl font-bold mb-4">🎮 Клинические кейсы</h2>
-            <div id="gameContainer">
-                <div class="flex justify-between items-center mb-3">
-                    <span>Счёт: <span id="gameScore" class="font-bold text-blue-600">0</span></span>
-                    <button class="btn-primary text-sm px-4 py-2" onclick="newGameCase()">🎲 Новый кейс</button>
-                </div>
-                <div id="gameQuestion" class="p-4 bg-blue-50 border border-blue-200 rounded-xl mb-4 section-bg"></div>
-                <div id="gameOptions" class="space-y-2"></div>
-                <div id="gameResult" class="mt-4 hidden p-4 rounded-xl border"></div>
+        <!-- ПОДВАЛ -->
+        <div class="footer">
+            <div style="font-size:1.2rem;font-weight:600;letter-spacing:1px;margin-bottom:4px;">
+                👨‍⚕️ Османов А.
+            </div>
+            <div style="font-size:1rem;opacity:0.9;">
+                📞 <a href="tel:+79285551774">+7 928 555 17 74</a>
+            </div>
+            <div style="margin-top:8px;font-size:0.85rem;opacity:0.6;">
+                ⚕️ Assistant SMP v2.0 · Медицинский помощник
             </div>
         </div>
     </div>
 </div>
 
-<!-- ===== МОДАЛКИ ===== -->
+<!-- МОДАЛКИ -->
 <div id="cameraModal" class="modal-overlay">
-    <div class="modal-content card">
-        <div class="modal-header">
-            <h2 class="text-xl font-bold" id="cameraTitle">📷 Сканирование</h2>
-            <button class="modal-close" onclick="closeCamera()">✕</button>
+    <div class="modal-content">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+            <h3 style="font-weight:700;" id="cameraTitle">📷 Сканирование</h3>
+            <button onclick="closeCamera()" style="background:none;border:none;font-size:1.6rem;cursor:pointer;">✕</button>
         </div>
-        <div class="modal-body">
-            <video id="cameraVideo" autoplay playsinline class="w-full rounded-xl bg-black"></video>
-            <div class="flex gap-3 mt-3">
-                <button class="btn-green" onclick="capturePhoto()">📸 Снять</button>
-                <button class="btn-red" onclick="closeCamera()">✖ Отмена</button>
-            </div>
-            <canvas id="cameraCanvas" class="hidden"></canvas>
+        <video id="cameraVideo" autoplay playsinline style="width:100%;border-radius:10px;background:black;"></video>
+        <div style="display:flex;gap:10px;margin-top:12px;">
+            <button class="btn-primary" onclick="capturePhoto()" style="flex:1;">📸 Снять</button>
+            <button class="btn-danger" onclick="closeCamera()" style="flex:1;">✖ Отмена</button>
         </div>
+        <canvas id="cameraCanvas" style="display:none;"></canvas>
     </div>
 </div>
 
 <div id="historyViewModal" class="modal-overlay">
-    <div class="modal-content card" style="max-width: 1000px;">
-        <div class="modal-header">
-            <h2 class="text-xl font-bold" id="historyViewTitle">📋 Карточка пациента</h2>
-            <button class="modal-close" onclick="document.getElementById('historyViewModal').classList.remove('open')">✕</button>
+    <div class="modal-content">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+            <h3 style="font-weight:700;" id="historyViewTitle">📋 Карточка пациента</h3>
+            <button onclick="document.getElementById('historyViewModal').classList.remove('open')" style="background:none;border:none;font-size:1.6rem;cursor:pointer;">✕</button>
         </div>
-        <div class="modal-body" id="historyViewBody">
-            <p class="text-gray-500">Загрузка...</p>
-        </div>
+        <div id="historyViewBody"><p style="color:var(--text-secondary);">Загрузка...</p></div>
     </div>
 </div>
 
-<div id="editModal" class="edit-modal-overlay">
-    <div class="edit-modal card">
-        <div class="modal-title" id="editModalTitle">Редактировать</div>
-        <input type="text" id="editModalInput" placeholder="Введите новое значение...">
-        <div style="margin-top: 4px; font-size: 0.8rem; color: var(--text-secondary);" id="editModalHint"></div>
-        <div>
-            <button class="btn-save" id="editModalSave">✅ Сохранить</button>
-            <button class="btn-cancel" id="editModalCancel">✖ Отмена</button>
+<div id="editModal" class="modal-overlay">
+    <div class="modal-content">
+        <h3 style="font-weight:700;margin-bottom:12px;" id="editModalTitle">✏️ Редактировать</h3>
+        <input type="text" id="editModalInput" class="input-field" placeholder="Новое значение">
+        <div style="display:flex;gap:10px;margin-top:12px;">
+            <button class="btn-primary" onclick="saveEdit()" style="flex:1;">✅ Сохранить</button>
+            <button class="btn-danger" onclick="document.getElementById('editModal').classList.remove('open')" style="flex:1;">✖ Отмена</button>
         </div>
     </div>
 </div>
-
-<div class="toast-container" id="toastContainer"></div>
 
 <script>
 // ============================================================
@@ -960,9 +592,6 @@
 // ============================================================
 let token = localStorage.getItem('token') || null;
 let user = JSON.parse(localStorage.getItem('user') || 'null');
-let currentCameraType = null;
-let cameraStream = null;
-let currentTheme = 'light';
 let currentPatient = null;
 let currentAnalysis = null;
 let currentText = '';
@@ -970,12 +599,12 @@ let gameCases = [];
 let gameScore = 0;
 let currentGameCase = null;
 let gameAnswered = false;
-let omsType = 'oms';
-
+let currentGameMode = 'diagnostic';
+let currentTheme = 'light';
+let currentScale = parseInt(localStorage.getItem('scale') || '1');
 let documentData = {
-    passport: { images: [], fio: '', birth: '', address: '', number: '' },
-    passport_reg: { images: [] },
-    oms: { images: [], number: '' },
+    passport: { images: [] },
+    oms: { images: [] },
     signature: { images: [] },
     ecg: { images: [] }
 };
@@ -994,33 +623,47 @@ function showLogin() {
 
 async function register() {
     const username = document.getElementById('regUsername').value.trim();
-    const email = document.getElementById('regEmail').value.trim();
+    const phone = '+7' + document.getElementById('regPhone').value.replace(/\D/g, '');
     const password = document.getElementById('regPassword').value.trim();
-    if (!username || !password) { showToast('Заполните все поля', 'error'); return; }
+    if (!username || !phone || phone.length < 12) {
+        showToast('Заполните все поля корректно', 'error');
+        return;
+    }
     try {
         const r = await fetch('/auth/register', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ username, email, password })
+            body: JSON.stringify({ username, phone, password })
         });
-        if (!r.ok) throw new Error('Ошибка регистрации');
-        showToast('Регистрация успешна!', 'success');
+        if (!r.ok) {
+            const err = await r.json();
+            throw new Error(err.detail || 'Ошибка регистрации');
+        }
+        showToast('Регистрация успешна! Войдите.', 'success');
         showLogin();
-        document.getElementById('loginUsername').value = username;
-    } catch (e) { showToast('Ошибка: ' + e.message, 'error'); }
+        document.getElementById('loginInput').value = phone;
+    } catch (e) {
+        showToast('Ошибка: ' + e.message, 'error');
+    }
 }
 
 async function login() {
-    const username = document.getElementById('loginUsername').value.trim();
+    const login = document.getElementById('loginInput').value.trim();
     const password = document.getElementById('loginPassword').value.trim();
-    if (!username || !password) { showToast('Введите логин и пароль', 'error'); return; }
+    if (!login || !password) {
+        showToast('Введите логин и пароль', 'error');
+        return;
+    }
     try {
         const r = await fetch('/auth/login', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ username, password })
+            body: JSON.stringify({ login, password })
         });
-        if (!r.ok) throw new Error('Неверный логин или пароль');
+        if (!r.ok) {
+            const err = await r.json();
+            throw new Error(err.detail || 'Неверный логин или пароль');
+        }
         const data = await r.json();
         token = data.access_token;
         user = data.user;
@@ -1028,7 +671,9 @@ async function login() {
         localStorage.setItem('user', JSON.stringify(user));
         showToast('Вход выполнен!', 'success');
         enterApp();
-    } catch (e) { showToast('Ошибка: ' + e.message, 'error'); }
+    } catch (e) {
+        showToast('Ошибка: ' + e.message, 'error');
+    }
 }
 
 function logout() {
@@ -1045,30 +690,36 @@ function enterApp() {
     document.getElementById('authPage').classList.add('hidden');
     document.getElementById('appPage').classList.remove('hidden');
     document.getElementById('userName').textContent = user?.username || '—';
+    setupRoles();
     loadTemplates();
     loadHistory();
+    loadUsers();
+    loadGameCases();
     switchTab('chat');
-    generateGameCases();
     newGameCase();
 }
 
-if (token && user) enterApp();
-
 // ============================================================
-//  ТЕМЫ
+//  РОЛИ
 // ============================================================
-function setTheme(theme) {
-    currentTheme = theme;
-    document.body.className = `theme-${theme}`;
-    localStorage.setItem('assistant-smp-theme', theme);
+function setupRoles() {
+    const role = user?.role || 'user';
+    const isAdmin = role === 'admin';
+    const isModerator = role === 'moderator' || isAdmin;
+    
+    // Шаблоны: видят admin и moderator
+    document.querySelectorAll('.tab-templates').forEach(el => {
+        el.style.display = isModerator ? '' : 'none';
+    });
+    // Пользователи: только admin
+    document.querySelectorAll('.tab-users').forEach(el => {
+        el.style.display = isAdmin ? '' : 'none';
+    });
+    // Форма добавления кейсов: admin и moderator
+    document.getElementById('addGameCaseForm').classList.toggle('hidden', !isModerator);
+    // Кнопка удаления шаблонов: только admin (показывается в списке)
+    // Кнопка добавления шаблона — видна обоим (она уже есть)
 }
-function toggleTheme() {
-    const themes = ['light', 'medical', 'dark'];
-    const idx = themes.indexOf(currentTheme);
-    setTheme(themes[(idx + 1) % themes.length]);
-}
-const savedTheme = localStorage.getItem('assistant-smp-theme') || 'light';
-setTheme(savedTheme);
 
 // ============================================================
 //  ВКЛАДКИ
@@ -1080,11 +731,17 @@ function switchTab(tab) {
     document.getElementById(`tab-${tab}`)?.classList.add('active');
     if (tab === 'templates') loadTemplates();
     if (tab === 'history') loadHistory();
-    if (tab === 'game') { generateGameCases(); newGameCase(); }
+    if (tab === 'users') loadUsers();
+    if (tab === 'game') loadGameCases();
+}
+
+function goHome() {
+    switchTab('chat');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
 // ============================================================
-//  АНАЛИЗ
+//  АНАЛИЗ (ЧАТ)
 // ============================================================
 async function analyze() {
     const text = document.getElementById('inputText').value.trim();
@@ -1124,67 +781,57 @@ function displayResults(data) {
     let html = '';
     
     if (p.extracted_data && Object.keys(p.extracted_data).length > 0) {
-        html += `<div class="flex flex-wrap gap-2 mb-3">`;
+        html += `<div class="vital-grid">`;
         for (const [key, val] of Object.entries(p.extracted_data)) {
             html += `<div class="vital-card" onclick="openEditVital('${key}')">
                         <span class="icon">${val.icon}</span>
-                        <div><div class="value">${val.value}</div><div class="label">${val.label}</div></div>
-                        <span class="edit-hint">✏️</span>
+                        <div class="value">${val.value}</div>
+                        <div class="label">${val.label}</div>
                      </div>`;
         }
         html += `</div>`;
     }
     
     if (p.complaints && p.complaints.length && p.complaints[0] !== 'Жалобы не указаны') {
-        html += `<div class="bg-blue-50 p-3 rounded-lg mb-3 section-bg"><span class="font-semibold">📋 Жалобы:</span> ${p.complaints.join('; ')}</div>`;
+        html += `<div class="card" style="background:var(--primary-light);border-color:var(--primary);">
+                    <strong>📋 Жалобы:</strong> ${p.complaints.join('; ')}
+                 </div>`;
     }
     
     if (p.medical_history) {
-        html += `<div class="bg-gray-50 p-3 rounded-lg mb-3 section-bg"><span class="font-semibold">📖 Анамнез:</span> ${p.medical_history}</div>`;
+        html += `<div class="card" style="background:var(--primary-light);border-color:var(--primary);">
+                    <strong>📖 Анамнез:</strong> ${p.medical_history}
+                 </div>`;
     }
     
     if (analysis.red_flags && analysis.red_flags.length) {
-        html += `<div class="bg-red-50 border border-red-300 p-3 rounded-lg mb-3 red-flag"><span class="font-semibold text-red-600">🚨 Критические признаки:</span><ul class="list-disc pl-5 mt-1">`;
-        for (const flag of analysis.red_flags) {
-            html += `<li class="text-red-700 text-sm">${flag}</li>`;
-        }
-        html += `</ul></div>`;
+        html += `<div class="card" style="background:#fee2e2;border-color:#dc2626;color:#991b1b;">
+                    <strong>🚨 Критические признаки:</strong>
+                    <ul style="list-style:disc;padding-left:20px;margin-top:6px;">
+                        ${analysis.red_flags.map(f => `<li>${f}</li>`).join('')}
+                    </ul>
+                 </div>`;
     }
     
     if (analysis.possible_diagnoses && analysis.possible_diagnoses.length) {
-        html += `<div class="mb-3"><span class="font-semibold">📊 Дифференциальный диагноз (топ-3):</span>`;
+        html += `<div><strong>📊 Дифференциальный диагноз (топ-3):</strong></div>`;
         const top3 = analysis.possible_diagnoses.slice(0, 3);
         for (const diag of top3) {
-            const severityCls = {
-                critical: 'severity-critical',
-                high: 'severity-high',
-                medium: 'severity-medium',
-                low: 'severity-low'
-            }[diag.severity] || 'severity-medium';
-            const barColor = diag.probability > 70 ? 'bg-green-500' : (diag.probability > 40 ? 'bg-yellow-500' : 'bg-red-400');
-            
-            html += `
-                <div class="diagnosis-card ${severityCls}" onclick="toggleProtocol('${diag.id}')" id="diag-${diag.id}">
-                    <div class="flex justify-between items-start">
-                        <div>
-                            <span class="font-medium">${diag.name}</span>
-                            <span class="text-xs text-gray-500 ml-2">(${diag.matched_symptoms}/${diag.total_symptoms} симптомов)</span>
-                            ${diag.icd10 ? `<span class="text-xs font-mono text-gray-500 ml-2">${diag.icd10}</span>` : ''}
-                            <br>
-                            <span class="text-xs font-medium ${diag.severity === 'critical' ? 'text-red-600' : ''}">${diag.severity === 'critical' ? '🔴 Критическое' : diag.severity === 'high' ? '🟠 Высокий риск' : diag.severity === 'medium' ? '🟡 Средний риск' : '🟢 Низкий риск'}</span>
+            html += `<div class="diagnosis-card" onclick="toggleProtocol('${diag.id}')">
+                        <div class="header">
+                            <span class="name">${diag.name}</span>
+                            <span class="prob">${diag.probability}%</span>
                         </div>
-                        <span class="font-bold text-blue-600 text-lg">${diag.probability}%</span>
-                    </div>
-                    <div class="probability-bar"><div class="fill ${barColor}" style="width: ${Math.min(diag.probability, 100)}%"></div></div>
-                    
-                    <div class="protocol-details" id="protocol-${diag.id}">
-                        ${diag.icd10 ? `<div><strong>МКБ-10:</strong> ${diag.icd10}</div>` : ''}
-                        <div><strong>Протокол действий:</strong></div>
-                        <div class="whitespace-pre-line text-sm">${diag.protocol || 'Протокол не указан'}</div>
-                        <div class="text-xs text-gray-500 mt-2">👆 Нажмите на диагноз, чтобы скрыть</div>
-                    </div>
-                </div>
-            `;
+                        <div style="font-size:0.85rem;color:var(--text-secondary);">
+                            ${diag.icd10 ? `МКБ-10: ${diag.icd10}` : ''}
+                            (${diag.matched_symptoms}/${diag.total_symptoms} симптомов)
+                        </div>
+                        <div class="bar"><div class="fill" style="width:${Math.min(diag.probability, 100)}%;"></div></div>
+                        <div id="protocol-${diag.id}" style="display:none;margin-top:8px;padding:10px;background:var(--bg-body);border-radius:8px;">
+                            <strong>Протокол:</strong>
+                            <div style="white-space:pre-line;font-size:0.9rem;">${diag.protocol || 'Не указан'}</div>
+                        </div>
+                     </div>`;
         }
         html += `</div>`;
     }
@@ -1195,63 +842,73 @@ function displayResults(data) {
     if (analysis.new_questions) allQuestions = [...allQuestions, ...analysis.new_questions];
     
     if (allQuestions.length) {
-        html += `<div class="mt-4"><span class="font-semibold">❓ Уточняющие вопросы</span>`;
-        html += `<div id="questionsContainer">`;
+        html += `<div class="mt-4"><strong>❓ Уточняющие вопросы</strong></div>`;
         const answeredQuestions = JSON.parse(localStorage.getItem('answeredQuestions') || '[]');
-        
         for (const q of allQuestions) {
             const isAnswered = answeredQuestions.includes(q);
             html += `
                 <div class="question-item ${isAnswered ? 'answered' : ''}" data-question="${q}">
                     <div class="flex-row">
-                        <span class="text-blue-500 text-lg">❓</span>
-                        <span class="text-sm flex-1 min-w-[120px] font-medium">${q}</span>
-                        <input type="text" placeholder="Введите ответ..." class="flex-1 min-w-[120px]" data-question="${q}" ${isAnswered ? 'disabled' : ''}>
-                        <button class="btn-submit" onclick="submitAnswer(this)" ${isAnswered ? 'disabled' : ''}>➤ Добавить</button>
+                        <span>❓</span>
+                        <span style="flex:1;font-weight:500;">${q}</span>
+                        <input type="text" placeholder="Ответ..." class="input-field" style="flex:1;min-width:120px;" data-question="${q}" ${isAnswered ? 'disabled' : ''}>
+                        <button class="btn-outline" style="white-space:nowrap;padding:8px 16px;" onclick="submitAnswer(this)" ${isAnswered ? 'disabled' : ''}>➤</button>
                     </div>
-                    <div class="quick-values" id="quick-${q.replace(/\s/g, '_')}">
+                    <div class="quick-values">
                         ${getQuickValues(q)}
                     </div>
                 </div>
             `;
         }
-        html += `</div>`;
-        
         html += `
-            <div class="mt-3 flex gap-3 flex-wrap">
-                <button class="btn-green" onclick="sendAllAnswers()">📤 Отправить все ответы</button>
-                <button class="btn-outline text-sm" onclick="clearAnswers()">✖ Очистить ответы</button>
+            <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px;">
+                <button class="btn-primary" onclick="sendAllAnswers()" style="background:#16a34a;flex:1;">📤 Отправить все ответы</button>
+                <button class="btn-outline" onclick="clearAnswers()">✖ Очистить</button>
             </div>
         `;
-        html += `</div>`;
     }
     
-    container.innerHTML = html;
-    // Показываем кнопку сохранения
-    document.querySelector('#resultContainer .btn-green')?.classList.remove('hidden');
+    container.querySelector('#analysisResult').innerHTML = html;
 }
 
-// ============================================================
-//  БЫСТРЫЕ ЗНАЧЕНИЯ ДЛЯ ВОПРОСОВ
-// ============================================================
-function getQuickValues(question) {
-    const q = question.toLowerCase();
-    if (q.includes('температур') || q.includes('t')) {
-        return `<button onclick="setQuickValue(this, '36')">36</button><button onclick="setQuickValue(this, '36.6')">36.6</button><button onclick="setQuickValue(this, '37')">37</button><button onclick="setQuickValue(this, '38')">38</button>`;
+function toggleProtocol(id) {
+    const el = document.getElementById(`protocol-${id}`);
+    if (el) {
+        el.style.display = el.style.display === 'none' ? 'block' : 'none';
     }
-    if (q.includes('сатурац') || q.includes('spo2')) {
-        return `<button onclick="setQuickValue(this, '97')">97</button><button onclick="setQuickValue(this, '98')">98</button><button onclick="setQuickValue(this, '99')">99</button>`;
+}
+
+function getQuickValues(q) {
+    const ql = q.toLowerCase();
+    if (ql.includes('температур') || ql.includes('t')) {
+        return `<button onclick="setQuickValue(this,'36')">36</button>
+                <button onclick="setQuickValue(this,'36.6')">36.6</button>
+                <button onclick="setQuickValue(this,'37')">37</button>
+                <button onclick="setQuickValue(this,'38')">38</button>`;
     }
-    if (q.includes('давление') || q.includes('ад')) {
-        return `<button onclick="setQuickValue(this, '120/80')">120/80</button><button onclick="setQuickValue(this, '140/90')">140/90</button><button onclick="setQuickValue(this, '180/100')">180/100</button>`;
+    if (ql.includes('сатурац') || ql.includes('spo2')) {
+        return `<button onclick="setQuickValue(this,'97')">97</button>
+                <button onclick="setQuickValue(this,'98')">98</button>
+                <button onclick="setQuickValue(this,'99')">99</button>`;
     }
-    if (q.includes('пульс') || q.includes('чсс')) {
-        return `<button onclick="setQuickValue(this, '70')">70</button><button onclick="setQuickValue(this, '90')">90</button><button onclick="setQuickValue(this, '110')">110</button>`;
+    if (ql.includes('давление') || ql.includes('ад')) {
+        return `<button onclick="setQuickValue(this,'120/80')">120/80</button>
+                <button onclick="setQuickValue(this,'140/90')">140/90</button>
+                <button onclick="setQuickValue(this,'180/100')">180/100</button>`;
     }
-    if (q.includes('глюкоз')) {
-        return `<button onclick="setQuickValue(this, '5.6')">5.6</button><button onclick="setQuickValue(this, '7.8')">7.8</button><button onclick="setQuickValue(this, '10')">10</button>`;
+    if (ql.includes('пульс') || ql.includes('чсс')) {
+        return `<button onclick="setQuickValue(this,'70')">70</button>
+                <button onclick="setQuickValue(this,'90')">90</button>
+                <button onclick="setQuickValue(this,'110')">110</button>`;
     }
-    return `<button onclick="setQuickValue(this, 'Да')">Да</button><button onclick="setQuickValue(this, 'Нет')">Нет</button><button onclick="setQuickValue(this, 'Не знаю')">Не знаю</button>`;
+    if (ql.includes('глюкоз')) {
+        return `<button onclick="setQuickValue(this,'5.6')">5.6</button>
+                <button onclick="setQuickValue(this,'7.8')">7.8</button>
+                <button onclick="setQuickValue(this,'10')">10</button>`;
+    }
+    return `<button onclick="setQuickValue(this,'Да')">Да</button>
+            <button onclick="setQuickValue(this,'Нет')">Нет</button>
+            <button onclick="setQuickValue(this,'Не знаю')">Не знаю</button>`;
 }
 
 function setQuickValue(btn, value) {
@@ -1264,9 +921,6 @@ function setQuickValue(btn, value) {
     }
 }
 
-// ============================================================
-//  ОТПРАВКА ОТВЕТОВ
-// ============================================================
 async function submitAnswer(btn) {
     const item = btn.closest('.question-item');
     if (!item) return;
@@ -1299,16 +953,13 @@ async function submitAnswer(btn) {
         answered.push(question);
         localStorage.setItem('answeredQuestions', JSON.stringify(answered));
         
-        updateVitals(data.patient);
-        if (currentAnalysis) {
-            updateDiagnoses(currentAnalysis);
-        }
+        displayResults({ patient: currentPatient, analysis: currentAnalysis, raw_text: currentText, extracted_fields: [] });
         showToast('Ответ принят', 'success');
     } catch (e) {
         showToast('Ошибка: ' + e.message, 'error');
     } finally {
         btn.disabled = false;
-        btn.textContent = '➤ Добавить';
+        btn.textContent = '➤';
     }
 }
 
@@ -1318,13 +969,13 @@ async function sendAllAnswers() {
     for (const item of items) {
         const input = item.querySelector('input');
         if (input && input.value.trim()) {
-            const btn = item.querySelector('.btn-submit');
+            const btn = item.querySelector('.btn-outline');
             await submitAnswer(btn);
             sent++;
         }
     }
     if (sent === 0) {
-        showToast('Нет новых ответов для отправки', 'info');
+        showToast('Нет новых ответов', 'info');
     } else {
         showToast(`Отправлено ${sent} ответов`, 'success');
     }
@@ -1336,308 +987,146 @@ function clearAnswers() {
     showToast('Ответы очищены', 'info');
 }
 
-function updateVitals(patient) {
-    if (currentAnalysis) {
-        displayResults({ patient, analysis: currentAnalysis, raw_text: currentText, extracted_fields: Object.keys(patient.status).filter(k => patient.status[k] === 'EXTRACTED') });
-    }
-}
-
-function updateDiagnoses(analysis) {
-    if (analysis && analysis.possible_diagnoses) {
-        displayResults({ patient: currentPatient, analysis: analysis, raw_text: currentText, extracted_fields: Object.keys(currentPatient.status).filter(k => currentPatient.status[k] === 'EXTRACTED') });
-    }
-}
-
 // ============================================================
-//  ПРОТОКОЛ
+//  ИСТОРИЯ
 // ============================================================
-function toggleProtocol(id) {
-    const el = document.getElementById(`protocol-${id}`);
-    if (el) {
-        el.classList.toggle('open');
-        if (el.classList.contains('open')) {
-            el.style.display = 'block';
-        } else {
-            el.style.display = 'none';
-        }
-    }
-    document.querySelectorAll('.diagnosis-card').forEach(c => c.classList.remove('selected'));
-    const card = document.getElementById(`diag-${id}`);
-    if (card) card.classList.add('selected');
-}
-
-// ============================================================
-//  РЕДАКТИРОВАНИЕ ВИТАЛЬНЫХ
-// ============================================================
-let editingVitalKey = null;
-
-function openEditVital(key) {
-    editingVitalKey = key;
-    const data = currentPatient?.extracted_data?.[key];
-    if (!data) return;
-    document.getElementById('editModalTitle').textContent = `✏️ Редактировать: ${data.label}`;
-    document.getElementById('editModalInput').value = data.value;
-    document.getElementById('editModalHint').textContent = 'Введите новое значение';
-    document.getElementById('editModal').classList.add('open');
-}
-
-document.getElementById('editModalSave').addEventListener('click', function() {
-    const val = document.getElementById('editModalInput').value.trim();
-    if (!val) { showToast('Введите значение', 'error'); return; }
-    document.getElementById('editModal').classList.remove('open');
-    if (currentPatient && editingVitalKey) {
-        const keyMap = {
-            'age': { field: 'age', label: 'Возраст', icon: '📅' },
-            'bp': { field: 'bp', label: 'Артериальное давление', icon: '🫀' },
-            'hr': { field: 'heart_rate', label: 'ЧСС (пульс)', icon: '❤️' },
-            'spo2': { field: 'spo2', label: 'Сатурация (SpO₂)', icon: '🫁' },
-            'temperature': { field: 'temperature', label: 'Температура', icon: '🌡️' }
-        };
-        const map = keyMap[editingVitalKey];
-        if (map) {
-            if (editingVitalKey === 'age') {
-                currentPatient.age = parseInt(val) || 0;
-                currentPatient.extracted_data['age'].value = val;
-            } else if (editingVitalKey === 'bp') {
-                const parts = val.split('/');
-                if (parts.length === 2) {
-                    currentPatient.vitals.bp_sys = parseInt(parts[0]) || 0;
-                    currentPatient.vitals.bp_dia = parseInt(parts[1]) || 0;
-                    currentPatient.extracted_data['bp'].value = val;
-                }
-            } else if (editingVitalKey === 'hr') {
-                currentPatient.vitals.heart_rate = parseInt(val) || 0;
-                currentPatient.extracted_data['hr'].value = val;
-            } else if (editingVitalKey === 'spo2') {
-                currentPatient.vitals.spo2 = parseInt(val) || 0;
-                currentPatient.extracted_data['spo2'].value = val;
-            } else if (editingVitalKey === 'temperature') {
-                currentPatient.vitals.temperature = parseFloat(val) || 0;
-                currentPatient.extracted_data['temperature'].value = val;
-            }
-            if (currentPatient && currentAnalysis) {
-                displayResults({ patient: currentPatient, analysis: currentAnalysis, raw_text: currentText, extracted_fields: Object.keys(currentPatient.status).filter(k => currentPatient.status[k] === 'EXTRACTED') });
-            }
-            showToast('Обновлено', 'success');
-        }
-    }
-});
-
-document.getElementById('editModalCancel').addEventListener('click', function() {
-    document.getElementById('editModal').classList.remove('open');
-});
-document.getElementById('editModal').addEventListener('click', function(e) {
-    if (e.target === this) this.classList.remove('open');
-});
-
-// ============================================================
-//  ДОКУМЕНТЫ
-// ============================================================
-async function captureDocument(type) {
-    currentCameraType = type;
-    const titles = { passport: '📷 Сканирование паспорта', passport_reg: '📷 Фото регистрации', oms: '📷 Сканирование полиса', signature: '📷 Подпись пациента', ecg: '📷 ЭКГ' };
-    document.getElementById('cameraTitle').textContent = titles[type] || '📷 Сканирование';
-    document.getElementById('cameraModal').classList.add('open');
-    try {
-        cameraStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
-        document.getElementById('cameraVideo').srcObject = cameraStream;
-    } catch (e) { showToast('Нет доступа к камере', 'error'); closeCamera(); }
-}
-
-function closeCamera() {
-    if (cameraStream) { cameraStream.getTracks().forEach(t => t.stop()); cameraStream = null; }
-    document.getElementById('cameraModal').classList.remove('open');
-}
-
-async function capturePhoto() {
-    const video = document.getElementById('cameraVideo');
-    const canvas = document.getElementById('cameraCanvas');
-    canvas.width = video.videoWidth || 640;
-    canvas.height = video.videoHeight || 480;
-    const ctx = canvas.getContext('2d');
-    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-    const dataUrl = canvas.toDataURL('image/jpeg');
-    closeCamera();
-    await processDocumentImage(dataUrl, currentCameraType);
-}
-
-async function processDocumentFile(event, type) {
-    const files = event.target.files;
-    for (const file of files) {
-        const reader = new FileReader();
-        reader.onload = async (e) => {
-            await processDocumentImage(e.target.result, type);
-        };
-        reader.readAsDataURL(file);
-    }
-    event.target.value = '';
-}
-
-async function processDocumentImage(dataUrl, type) {
-    const maxImages = type === 'ecg' ? 4 : 1;
-    if (documentData[type].images.length >= maxImages) {
-        showToast(`Максимум ${maxImages} фото`, 'error');
-        return;
-    }
-    documentData[type].images.push(dataUrl);
-    renderDocumentPreview(type);
-    
-    if (type === 'passport') await ocrPassport(dataUrl);
-    if (type === 'oms') await ocrOMS(dataUrl);
-    if (type === 'passport_reg') showToast('✅ Фото регистрации добавлено', 'success');
-}
-
-function renderDocumentPreview(type) {
-    const container = document.getElementById(`${type}Preview`);
+async function loadHistory() {
+    const container = document.getElementById('historyList');
     if (!container) return;
-    const labels = { passport: 'Паспорт', passport_reg: 'Регистрация', oms: 'Полис', signature: 'Подпись', ecg: 'ЭКГ' };
-    container.innerHTML = documentData[type].images.map((img, i) => `
-        <div class="photo-item">
-            <img src="${img}" alt="${labels[type]}">
-            <div class="photo-label">${labels[type]} ${i+1}</div>
-            <button class="remove-photo" onclick="removeDocumentImage('${type}', ${i})">✕</button>
-        </div>
-    `).join('');
-}
-
-function removeDocumentImage(type, index) {
-    documentData[type].images.splice(index, 1);
-    renderDocumentPreview(type);
-}
-
-async function ocrPassport(dataUrl) {
-    showToast('🔍 Распознаю паспорт...', 'info');
+    container.innerHTML = '<p style="color:var(--text-secondary);">Загрузка...</p>';
     try {
-        const result = await Tesseract.recognize(dataUrl, 'rus+eng');
-        const text = result.data.text;
-        console.log('OCR Паспорт:', text);
-        
-        let fio = '', birth = '', address = '', number = '';
-        const lines = text.split('\n').map(l => l.trim()).filter(l => l.length > 2);
-        const birthMatch = text.match(/(\d{2}\.\d{2}\.\d{4})/);
-        if (birthMatch) birth = birthMatch[1];
-        const numMatch = text.match(/(\d{4}\s*\d{6})/);
-        if (numMatch) number = numMatch[1];
-        const addressMatch = text.match(/зарегистр[ао]н\s*[:;]?\s*(.+?)(?:\n|$)/i);
-        if (addressMatch) address = addressMatch[1].trim();
-        
-        const cyrilicLines = lines.filter(l => /[а-яА-Я]/.test(l));
-        if (cyrilicLines.length >= 3) fio = cyrilicLines.slice(0, 3).join(' ');
-        else if (cyrilicLines.length >= 2) fio = cyrilicLines.join(' ');
-        else if (cyrilicLines.length >= 1) fio = cyrilicLines[0];
-        
-        if (fio || birth || number) {
-            document.getElementById('passportFio').textContent = fio || 'Не распознано';
-            document.getElementById('passportBirth').textContent = birth || 'Не распознано';
-            document.getElementById('passportAddress').textContent = address || 'Не распознано';
-            document.getElementById('passportNumber').textContent = number || 'Не распознано';
-            document.getElementById('passportData').classList.remove('hidden');
-            // Автозаполнение полей в чате
-            if (fio) document.getElementById('patientFio').value = fio;
-            if (birth) document.getElementById('patientBirth').value = birth;
-            if (address) document.getElementById('patientAddress').value = address;
-            showToast('✅ Паспорт распознан', 'success');
-        } else {
-            showToast('⚠️ Не удалось распознать данные', 'error');
-        }
-    } catch (e) { showToast('Ошибка OCR: ' + e.message, 'error'); }
-}
-
-async function ocrOMS(dataUrl) {
-    showToast('🔍 Распознаю документ...', 'info');
-    try {
-        const result = await Tesseract.recognize(dataUrl, 'rus+eng');
-        const text = result.data.text;
-        console.log('OCR Документ:', text);
-        const numMatch = text.match(/(\d{16})/) || text.match(/(\d{11})/);
-        if (numMatch) {
-            document.getElementById('omsNumber').textContent = numMatch[1];
-            document.getElementById('omsData').classList.remove('hidden');
-            showToast('✅ Номер распознан', 'success');
-        } else {
-            const nums = text.match(/\d{4,}/g);
-            if (nums && nums.length) {
-                document.getElementById('omsNumber').textContent = nums.join(' ');
-                document.getElementById('omsData').classList.remove('hidden');
-                showToast('✅ Номер распознан (частично)', 'success');
-            } else {
-                showToast('⚠️ Не удалось распознать номер', 'error');
-            }
-        }
-    } catch (e) { showToast('Ошибка OCR: ' + e.message, 'error'); }
-}
-
-function toggleOmsType() {
-    omsType = omsType === 'oms' ? 'snils' : 'oms';
-    const icon = document.getElementById('omsIcon');
-    const title = document.getElementById('omsTitle');
-    const label = document.getElementById('omsLabel');
-    if (omsType === 'snils') {
-        icon.textContent = '🆔';
-        title.textContent = 'СНИЛС';
-        label.textContent = 'Номер СНИЛС';
-    } else {
-        icon.textContent = '🩺';
-        title.textContent = 'Полис ОМС';
-        label.textContent = 'Номер полиса';
-    }
-    showToast(`Переключено на ${title.textContent}`, 'info');
-}
-
-// ============================================================
-//  СОХРАНЕНИЕ ВЫЗОВА
-// ============================================================
-async function saveCall() {
-    const fio = document.getElementById('patientFio').value.trim() || 'Не указано';
-    const birth = document.getElementById('patientBirth').value.trim();
-    const address = document.getElementById('patientAddress').value.trim();
-    
-    if (!currentPatient || !currentAnalysis) {
-        showToast('Сначала проведите анализ', 'error');
-        return;
-    }
-    
-    const btn = document.querySelector('#resultContainer .btn-green');
-    btn.disabled = true;
-    btn.textContent = '⏳ Сохранение...';
-    
-    try {
-        const finalDiagnosis = currentAnalysis.possible_diagnoses?.[0]?.name || null;
-        
-        const payload = {
-            patient: currentPatient,
-            analysis: currentAnalysis,
-            final_diagnosis: finalDiagnosis,
-            fio: fio,
-            birth_date: birth,
-            address: address,
-            has_ecg: documentData.ecg.images.length > 0,
-            has_passport: documentData.passport.images.length > 0,
-            has_oms: documentData.oms.images.length > 0,
-            has_signature: documentData.signature.images.length > 0
-        };
-        
-        const r = await fetch('/api/save_call', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-            body: JSON.stringify(payload)
-        });
-        
-        if (!r.ok) throw new Error('Ошибка сохранения');
+        const r = await fetch('/history', { headers: { 'Authorization': `Bearer ${token}` } });
+        if (!r.ok) throw new Error('Ошибка загрузки');
         const data = await r.json();
-        showToast(`✅ Вызов сохранён! ID: ${data.call_id}`, 'success');
-        loadHistory();
+        const calls = data.calls || [];
+        if (!calls.length) { container.innerHTML = '<p style="color:var(--text-secondary);">История пуста</p>'; return; }
+        container.innerHTML = calls.map(c => `
+            <div class="card" onclick="viewHistory('${c.call_id}')" style="cursor:pointer;">
+                <div style="display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px;">
+                    <div><strong>${c.fio || 'Неизвестно'}</strong> · ${c.diagnosis || 'Без диагноза'}</div>
+                    <div style="color:var(--text-secondary);font-size:0.85rem;">${c.timestamp || ''}</div>
+                </div>
+            </div>
+        `).join('');
+    } catch (e) {
+        container.innerHTML = `<p style="color:red;">Ошибка: ${e.message}</p>`;
+    }
+}
+
+async function viewHistory(callId) {
+    const modal = document.getElementById('historyViewModal');
+    const body = document.getElementById('historyViewBody');
+    modal.classList.add('open');
+    body.innerHTML = '<p style="color:var(--text-secondary);">Загрузка...</p>';
+    
+    try {
+        const r = await fetch(`/history/${callId}`, { headers: { 'Authorization': `Bearer ${token}` } });
+        if (!r.ok) throw new Error('Ошибка загрузки');
+        const data = await r.json();
+        document.getElementById('historyViewTitle').textContent = `📋 ${data.fio || 'Пациент'}`;
+        let html = `
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px;">
+                <div><strong>ФИО:</strong> ${data.fio || '—'}</div>
+                <div><strong>Дата рождения:</strong> ${data.birth_date || '—'}</div>
+                <div style="grid-column:span 2;"><strong>Адрес:</strong> ${data.address || '—'}</div>
+                <div style="grid-column:span 2;"><strong>Диагноз:</strong> ${data.diagnosis || '—'}</div>
+            </div>
+            <div class="card" style="background:var(--primary-light);"><strong>Жалобы:</strong> ${data.complaints?.join('; ') || '—'}</div>
+            <div class="card" style="background:var(--primary-light);"><strong>Анамнез:</strong> ${data.anamnesis || '—'}</div>
+            ${data.protocol ? `<div class="card"><strong>Протокол:</strong><div style="white-space:pre-line;">${data.protocol}</div></div>` : ''}
+            <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px;">
+                ${data.has_ecg ? '<span>❤️ ЭКГ</span>' : ''}
+                ${data.has_passport ? '<span>🪪 Паспорт</span>' : ''}
+                ${data.has_oms ? '<span>🩺 Полис</span>' : ''}
+                ${data.has_signature ? '<span>✍️ Подпись</span>' : ''}
+            </div>
+        `;
+        body.innerHTML = html;
+    } catch (e) {
+        body.innerHTML = `<p style="color:red;">Ошибка: ${e.message}</p>`;
+    }
+}
+
+// ============================================================
+//  ПОЛЬЗОВАТЕЛИ (ТОЛЬКО ADMIN)
+// ============================================================
+async function loadUsers() {
+    const container = document.getElementById('usersList');
+    if (!container) return;
+    if (user?.role !== 'admin') { container.innerHTML = '<p style="color:var(--text-secondary);">Доступ только для администратора</p>'; return; }
+    container.innerHTML = '<p style="color:var(--text-secondary);">Загрузка...</p>';
+    try {
+        const r = await fetch('/auth/users', { headers: { 'Authorization': `Bearer ${token}` } });
+        if (!r.ok) throw new Error('Ошибка загрузки');
+        const data = await r.json();
+        const users = data.users || [];
+        if (!users.length) { container.innerHTML = '<p style="color:var(--text-secondary);">Нет пользователей</p>'; return; }
+        container.innerHTML = users.map(u => `
+            <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;padding:10px;border-bottom:1px solid var(--border-color);">
+                <div><strong>${u.username}</strong> · ${u.phone || 'без телефона'} · <span style="color:var(--text-secondary);">${u.role}</span></div>
+                <div>
+                    <select onchange="changeRole('${u.username}', this.value)" style="padding:6px 12px;border-radius:8px;border:2px solid var(--border-color);">
+                        <option value="user" ${u.role === 'user' ? 'selected' : ''}>Пользователь</option>
+                        <option value="moderator" ${u.role === 'moderator' ? 'selected' : ''}>Модератор</option>
+                        <option value="admin" ${u.role === 'admin' ? 'selected' : ''}>Администратор</option>
+                    </select>
+                </div>
+            </div>
+        `).join('');
+    } catch (e) {
+        container.innerHTML = `<p style="color:red;">Ошибка: ${e.message}</p>`;
+    }
+}
+
+async function changeRole(username, newRole) {
+    try {
+        const r = await fetch(`/auth/users/${username}/role?new_role=${newRole}`, {
+            method: 'PUT',
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        if (!r.ok) throw new Error('Ошибка обновления роли');
+        showToast(`Роль пользователя ${username} изменена на ${newRole}`, 'success');
+        loadUsers();
+        setupRoles();
     } catch (e) {
         showToast('Ошибка: ' + e.message, 'error');
-    } finally {
-        btn.disabled = false;
-        btn.textContent = '💾 Сохранить вызов в историю';
     }
 }
 
 // ============================================================
 //  ШАБЛОНЫ
 // ============================================================
+async function loadTemplates() {
+    const container = document.getElementById('templatesList');
+    if (!container) return;
+    container.innerHTML = '<p style="color:var(--text-secondary);">Загрузка...</p>';
+    try {
+        const r = await fetch('/templates/list', { headers: { 'Authorization': `Bearer ${token}` } });
+        if (!r.ok) throw new Error('Ошибка загрузки');
+        const data = await r.json();
+        const templates = data.templates || [];
+        if (!templates.length) { container.innerHTML = '<p style="color:var(--text-secondary);">Нет шаблонов</p>'; return; }
+        const isAdmin = user?.role === 'admin';
+        container.innerHTML = templates.map(t => `
+            <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;padding:10px;border-bottom:1px solid var(--border-color);">
+                <div>
+                    <strong>${t.diagnosis}</strong>
+                    ${t.mkb ? ` (${t.mkb})` : ''}
+                    <span style="color:var(--text-secondary);font-size:0.85rem;"> · ${t.complaints_count} жалоб</span>
+                </div>
+                <div style="display:flex;gap:6px;">
+                    <span style="font-size:0.75rem;padding:2px 10px;border-radius:20px;background:${t.severity === 'critical' ? '#fee2e2' : '#e5e7eb'};">
+                        ${t.severity}
+                    </span>
+                    ${isAdmin ? `<button class="btn-danger" style="padding:4px 12px;font-size:0.8rem;" onclick="deleteTemplate('${t.id}')">🗑️</button>` : ''}
+                </div>
+            </div>
+        `).join('');
+    } catch (e) {
+        container.innerHTML = `<p style="color:red;">Ошибка: ${e.message}</p>`;
+    }
+}
+
 async function addTemplateManually() {
     const mkb = document.getElementById('templateMkb').value.trim();
     const diagnosis = document.getElementById('templateDiagnosis').value.trim();
@@ -1646,8 +1135,10 @@ async function addTemplateManually() {
     const protocol = document.getElementById('templateProtocol').value.trim();
     const severity = document.getElementById('templateSeverity').value;
     
-    if (!diagnosis) { showToast('Введите диагноз', 'error'); return; }
-    if (!complaints.length) { showToast('Введите хотя бы одну жалобу', 'error'); return; }
+    if (!diagnosis || !complaints.length) {
+        showToast('Заполните диагноз и жалобы', 'error');
+        return;
+    }
     
     try {
         const r = await fetch('/templates/manual', {
@@ -1656,75 +1147,16 @@ async function addTemplateManually() {
             body: JSON.stringify({ mkb, diagnosis, complaints, anamnesis, protocol, severity })
         });
         if (!r.ok) throw new Error('Ошибка добавления');
-        const data = await r.json();
-        showToast(`✅ Шаблон "${diagnosis}" добавлен`, 'success');
+        showToast('Шаблон добавлен', 'success');
         document.getElementById('templateMkb').value = '';
         document.getElementById('templateDiagnosis').value = '';
         document.getElementById('templateComplaints').value = '';
         document.getElementById('templateAnamnesis').value = '';
         document.getElementById('templateProtocol').value = '';
         loadTemplates();
-    } catch (e) { showToast('Ошибка: ' + e.message, 'error'); }
-}
-
-async function uploadFiles(event) {
-    const files = event.target.files;
-    if (!files.length) return;
-    for (const file of files) {
-        const fd = new FormData();
-        fd.append('file', file);
-        try {
-            const r = await fetch('/templates/upload', {
-                method: 'POST',
-                headers: { 'Authorization': `Bearer ${token}` },
-                body: fd
-            });
-            if (!r.ok) throw new Error('Ошибка загрузки');
-            const data = await r.json();
-            showToast(`✅ ${file.name} загружен (${data.diagnosis})`, 'success');
-        } catch (e) { showToast(`❌ ${file.name}: ${e.message}`, 'error'); }
+    } catch (e) {
+        showToast('Ошибка: ' + e.message, 'error');
     }
-    event.target.value = '';
-    loadTemplates();
-}
-
-const uploadZone = document.getElementById('uploadZone');
-if (uploadZone) {
-    uploadZone.addEventListener('dragover', e => { e.preventDefault(); uploadZone.classList.add('dragover'); });
-    uploadZone.addEventListener('dragleave', () => uploadZone.classList.remove('dragover'));
-    uploadZone.addEventListener('drop', e => {
-        e.preventDefault();
-        uploadZone.classList.remove('dragover');
-        document.getElementById('fileInput').files = e.dataTransfer.files;
-        uploadFiles({ target: { files: e.dataTransfer.files } });
-    });
-}
-
-async function loadTemplates() {
-    const container = document.getElementById('templatesList');
-    if (!container) return;
-    container.innerHTML = '<p class="text-gray-500 text-sm">Загрузка...</p>';
-    try {
-        const r = await fetch('/templates/list', { headers: { 'Authorization': `Bearer ${token}` } });
-        if (!r.ok) throw new Error('Ошибка загрузки');
-        const data = await r.json();
-        const templates = data.templates || [];
-        if (!templates.length) { container.innerHTML = '<p class="text-gray-500 text-sm">Нет шаблонов</p>'; return; }
-        container.innerHTML = templates.map(t => `
-            <div class="template-item">
-                <div>
-                    <span class="font-medium">${t.diagnosis}</span>
-                    ${t.mkb ? `<span class="text-xs font-mono text-gray-500 ml-2">${t.mkb}</span>` : ''}
-                    <span class="text-sm text-gray-500 ml-2">(${t.complaints_count || 0} жалоб)</span>
-                    <span class="text-xs text-gray-400 ml-2">${t.source || 'ручной'}</span>
-                </div>
-                <div class="flex gap-2">
-                    <span class="status-badge ${t.severity === 'critical' ? 'status-extracted' : 'status-verified'}">${t.severity}</span>
-                    <button class="btn-red text-sm px-3 py-1" onclick="deleteTemplate('${t.id}')">✕</button>
-                </div>
-            </div>
-        `).join('');
-    } catch (e) { container.innerHTML = `<p class="text-red-500 text-sm">Ошибка: ${e.message}</p>`; }
 }
 
 async function deleteTemplate(id) {
@@ -1737,144 +1169,371 @@ async function deleteTemplate(id) {
         if (!r.ok) throw new Error('Ошибка удаления');
         showToast('Шаблон удалён', 'info');
         loadTemplates();
-    } catch (e) { showToast('Ошибка: ' + e.message, 'error'); }
-}
-
-// ============================================================
-//  ИСТОРИЯ
-// ============================================================
-async function loadHistory() {
-    const container = document.getElementById('historyList');
-    if (!container) return;
-    container.innerHTML = '<p class="text-gray-500 text-sm">Загрузка...</p>';
-    try {
-        const r = await fetch('/history', { headers: { 'Authorization': `Bearer ${token}` } });
-        if (!r.ok) throw new Error('Ошибка загрузки');
-        const data = await r.json();
-        const calls = data.calls || [];
-        if (!calls.length) { container.innerHTML = '<p class="text-gray-500 text-sm">История пуста</p>'; return; }
-        container.innerHTML = calls.map(c => `
-            <div class="history-card" onclick="viewHistory('${c.call_id}')">
-                <div class="flex justify-between items-start flex-wrap gap-2">
-                    <div>
-                        <div class="font-medium">${c.fio || 'Неизвестно'}</div>
-                        <div class="text-sm text-gray-500">${c.birth_date || ''} · ${c.diagnosis || 'Без диагноза'}</div>
-                    </div>
-                    <div class="text-right">
-                        <div class="text-sm">${c.timestamp || ''}</div>
-                        <div class="doc-icons">
-                            ${c.has_ecg ? '<span>❤️</span>' : ''}
-                            ${c.has_passport ? '<span>🪪</span>' : ''}
-                            ${c.has_oms ? '<span>🩺</span>' : ''}
-                            ${c.has_signature ? '<span>✍️</span>' : ''}
-                        </div>
-                    </div>
-                </div>
-            </div>
-        `).join('');
-    } catch (e) { container.innerHTML = `<p class="text-red-500 text-sm">Ошибка: ${e.message}</p>`; }
-}
-
-async function viewHistory(callId) {
-    const modal = document.getElementById('historyViewModal');
-    const body = document.getElementById('historyViewBody');
-    modal.classList.add('open');
-    body.innerHTML = '<p class="text-gray-500">Загрузка...</p>';
-    
-    try {
-        const r = await fetch(`/history/${callId}`, { headers: { 'Authorization': `Bearer ${token}` } });
-        if (!r.ok) throw new Error('Ошибка загрузки');
-        const data = await r.json();
-        document.getElementById('historyViewTitle').textContent = `📋 ${data.fio || 'Пациент'}`;
-        
-        let html = `
-            <div class="grid grid-cols-2 gap-3 mb-4">
-                <div><span class="text-xs text-gray-500">ФИО</span><div class="font-medium">${data.fio || '—'}</div></div>
-                <div><span class="text-xs text-gray-500">Дата рождения</span><div class="font-medium">${data.birth_date || '—'}</div></div>
-                <div><span class="text-xs text-gray-500">Адрес</span><div class="font-medium">${data.address || '—'}</div></div>
-                <div><span class="text-xs text-gray-500">Дата вызова</span><div class="font-medium">${data.timestamp || '—'}</div></div>
-            </div>
-            <div class="p-3 rounded-lg section-bg border mb-2"><span class="font-semibold">📋 Жалобы:</span> ${data.complaints?.join('; ') || '—'}</div>
-            <div class="p-3 rounded-lg section-bg border mb-2"><span class="font-semibold">📖 Анамнез:</span> ${data.anamnesis || '—'}</div>
-            <div class="p-3 rounded-lg section-bg border mb-2"><span class="font-semibold">📊 Диагноз:</span> ${data.diagnosis || '—'}</div>
-            ${data.protocol ? `<div class="p-3 rounded-lg section-bg border mb-2"><span class="font-semibold">📋 Протокол:</span><div class="whitespace-pre-line text-sm">${data.protocol}</div></div>` : ''}
-            <div class="flex gap-2 flex-wrap mt-2">
-                ${data.has_ecg ? '<span class="text-2xl">❤️</span>' : ''}
-                ${data.has_passport ? '<span class="text-2xl">🪪</span>' : ''}
-                ${data.has_oms ? '<span class="text-2xl">🩺</span>' : ''}
-                ${data.has_signature ? '<span class="text-2xl">✍️</span>' : ''}
-            </div>
-        `;
-        body.innerHTML = html;
     } catch (e) {
-        body.innerHTML = `<p class="text-red-500">Ошибка: ${e.message}</p>`;
+        showToast('Ошибка: ' + e.message, 'error');
     }
 }
 
 // ============================================================
 //  ИГРА
 // ============================================================
-function generateGameCases() {
-    gameCases = [
-        { id: 1, description: 'Мужчина 64 года. Внезапная давящая боль за грудиной, иррадиация в левую руку. Холодный пот. АД 180/90, ЧСС 110, SpO2 92%.', answer: 'Острый коронарный синдром', protocol: '1. ЭКГ в 10 минут\n2. Аспирин 300 мг\n3. Нитроглицерин\n4. Морфин\n5. Транспортировка в стационар с ЧКВ' },
-        { id: 2, description: 'Женщина 55 лет. Внезапная слабость в правой руке и ноге, нарушение речи, опущение правого угла рта. АД 210/110, ЧСС 85.', answer: 'Острое нарушение мозгового кровообращения (инсульт)', protocol: '1. Шкала FAST\n2. Мониторинг АД\n3. Глюкометрия\n4. Транспортировка в сосудистый центр\n5. Не снижать АД до 220/120' },
-        { id: 3, description: 'Мужчина 30 лет. После укуса пчелы появилась сыпь, отёк лица, затруднение дыхания. АД 80/50, ЧСС 130.', answer: 'Анафилактический шок', protocol: '1. Адреналин 0.3-0.5 мл в/м\n2. Инфузионная терапия\n3. Преднизолон 90-120 мг в/в\n4. Антигистаминные\n5. Мониторинг дыхания' }
+async function loadGameCases() {
+    try {
+        const r = await fetch('/game/cases', { headers: { 'Authorization': `Bearer ${token}` } });
+        if (!r.ok) throw new Error('Ошибка загрузки кейсов');
+        const data = await r.json();
+        gameCases = data.cases || [];
+        if (gameCases.length === 0) {
+            // Добавляем дефолтные кейсы, если нет
+            await addDefaultCases();
+        }
+    } catch (e) {
+        console.error('Ошибка загрузки кейсов:', e);
+    }
+}
+
+async function addDefaultCases() {
+    const defaults = [
+        {
+            title: 'Острый коронарный синдром',
+            description: 'Мужчина 64 года. Внезапная давящая боль за грудиной, иррадиация в левую руку. Холодный пот. АД 180/90, ЧСС 110.',
+            options: ['Острый коронарный синдром', 'Гипертонический криз', 'Пневмония', 'Межрёберная невралгия'],
+            correct: 0,
+            protocol: '1. ЭКГ в 10 минут\n2. Аспирин 300 мг\n3. Нитроглицерин\n4. Морфин\n5. Транспортировка в стационар с ЧКВ'
+        },
+        {
+            title: 'Инсульт',
+            description: 'Женщина 55 лет. Внезапная слабость в правой руке и ноге, нарушение речи, опущение правого угла рта. АД 210/110, ЧСС 85.',
+            options: ['Инсульт', 'Гипертонический криз', 'Мигрень', 'Эпилепсия'],
+            correct: 0,
+            protocol: '1. Шкала FAST\n2. Мониторинг АД\n3. Глюкометрия\n4. Транспортировка в сосудистый центр'
+        },
+        {
+            title: 'Анафилактический шок',
+            description: 'Мужчина 30 лет. После укуса пчелы появилась сыпь, отёк лица, затруднение дыхания. АД 80/50, ЧСС 130.',
+            options: ['Анафилактический шок', 'Отёк Квинке', 'Бронхиальная астма', 'Паническая атака'],
+            correct: 0,
+            protocol: '1. Адреналин 0.3-0.5 мл в/м\n2. Инфузионная терапия\n3. Преднизолон 90-120 мг в/в\n4. Антигистаминные'
+        }
     ];
+    for (const c of defaults) {
+        try {
+            await fetch('/game/cases', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                body: JSON.stringify(c)
+            });
+        } catch (e) {
+            console.error('Ошибка добавления дефолтного кейса:', e);
+        }
+    }
+    await loadGameCases();
+}
+
+function setGameMode(mode) {
+    currentGameMode = mode;
+    document.querySelectorAll('.mode-selector button').forEach(el => {
+        el.classList.toggle('active', el.dataset.mode === mode);
+    });
+    newGameCase();
 }
 
 function newGameCase() {
-    if (!gameCases.length) generateGameCases();
-    const idx = Math.floor(Math.random() * gameCases.length);
-    currentGameCase = gameCases[idx];
-    gameCases.splice(idx, 1);
-    gameAnswered = false;
-    document.getElementById('gameQuestion').innerHTML = `<div class="font-medium">Описание кейса:</div><p class="text-sm mt-1">${currentGameCase.description}</p>`;
-    const allAnswers = ['Острый коронарный синдром', 'ОНМК (инсульт)', 'Анафилактический шок', 'Гипертонический криз', 'ТЭЛА', 'Пневмоторакс'];
-    const options = [currentGameCase.answer];
-    while (options.length < 4) {
-        const random = allAnswers[Math.floor(Math.random() * allAnswers.length)];
-        if (!options.includes(random)) options.push(random);
+    const filtered = gameCases.filter(c => c.mode === currentGameMode || !c.mode);
+    if (!filtered.length) {
+        document.getElementById('gameQuestion').innerHTML = '<p style="font-weight:500;">Нет кейсов в этом режиме</p>';
+        document.getElementById('gameOptions').innerHTML = '';
+        document.getElementById('gameResult').classList.add('hidden');
+        return;
     }
-    options.sort(() => Math.random() - 0.5);
-    document.getElementById('gameOptions').innerHTML = options.map(opt => `
-        <button class="w-full text-left p-3 border rounded-lg hover:bg-blue-50 transition ${gameAnswered ? (opt === currentGameCase.answer ? 'border-green-500 bg-green-50' : 'border-red-500 bg-red-50') : ''}" onclick="checkGameAnswer('${opt}')" ${gameAnswered ? 'disabled' : ''}>
-            ${opt}
+    const idx = Math.floor(Math.random() * filtered.length);
+    currentGameCase = filtered[idx];
+    gameAnswered = false;
+    
+    document.getElementById('gameQuestion').innerHTML = `
+        <div style="font-weight:600;margin-bottom:4px;">${currentGameCase.title}</div>
+        <p>${currentGameCase.description}</p>
+        ${currentGameMode === 'emergency' ? '<div style="color:red;font-weight:600;margin-top:4px;">⏱️ 30 секунд на ответ!</div>' : ''}
+    `;
+    
+    document.getElementById('gameOptions').innerHTML = currentGameCase.options.map((opt, i) => `
+        <button class="btn-outline" onclick="checkGameAnswer(${i})" style="text-align:left;justify-content:flex-start;">
+            ${String.fromCharCode(65 + i)}. ${opt}
         </button>
     `).join('');
+    
     document.getElementById('gameResult').classList.add('hidden');
 }
 
 function checkGameAnswer(selected) {
     if (gameAnswered) return;
     gameAnswered = true;
+    const isCorrect = selected === currentGameCase.correct;
     const resultDiv = document.getElementById('gameResult');
-    const isCorrect = selected === currentGameCase.answer;
-    if (isCorrect) { gameScore++; document.getElementById('gameScore').textContent = gameScore; }
-    resultDiv.className = `mt-4 p-4 rounded-lg border ${isCorrect ? 'border-green-500 bg-green-50' : 'border-red-500 bg-red-50'}`;
-    resultDiv.innerHTML = `<div class="${isCorrect ? 'text-green-700' : 'text-red-700'} font-bold">${isCorrect ? '✅ Правильно!' : '❌ Неправильно. Правильный ответ: ' + currentGameCase.answer}</div><div class="text-sm mt-1 whitespace-pre-line"><strong>Протокол:</strong>\n${currentGameCase.protocol}</div>`;
+    
+    if (isCorrect) {
+        gameScore++;
+        document.getElementById('gameScore').textContent = gameScore;
+        resultDiv.className = 'card';
+        resultDiv.style.border = '2px solid #16a34a';
+        resultDiv.style.background = '#f0fdf4';
+        resultDiv.innerHTML = `
+            <div style="color:#16a34a;font-weight:700;">✅ Правильно!</div>
+            <div style="margin-top:8px;"><strong>Протокол:</strong></div>
+            <div style="white-space:pre-line;">${currentGameCase.protocol}</div>
+        `;
+    } else {
+        resultDiv.className = 'card';
+        resultDiv.style.border = '2px solid #dc2626';
+        resultDiv.style.background = '#fef2f2';
+        resultDiv.innerHTML = `
+            <div style="color:#dc2626;font-weight:700;">❌ Неправильно. Правильный ответ: ${currentGameCase.options[currentGameCase.correct]}</div>
+            <div style="margin-top:8px;"><strong>Протокол:</strong></div>
+            <div style="white-space:pre-line;">${currentGameCase.protocol}</div>
+        `;
+    }
     resultDiv.classList.remove('hidden');
+    
+    // Блокируем кнопки
+    document.querySelectorAll('#gameOptions button').forEach(btn => btn.disabled = true);
+}
+
+async function addGameCase() {
+    const title = document.getElementById('gameTitle').value.trim();
+    const description = document.getElementById('gameDescription').value.trim();
+    const options = [
+        document.getElementById('gameOpt1').value.trim(),
+        document.getElementById('gameOpt2').value.trim(),
+        document.getElementById('gameOpt3').value.trim(),
+        document.getElementById('gameOpt4').value.trim()
+    ];
+    const correct = parseInt(document.getElementById('gameCorrect').value);
+    const protocol = document.getElementById('gameProtocol').value.trim();
+    
+    if (!title || !description || options.some(o => !o) || !protocol) {
+        showToast('Заполните все поля', 'error');
+        return;
+    }
+    
+    try {
+        const r = await fetch('/game/cases', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+            body: JSON.stringify({ title, description, options, correct, protocol, mode: currentGameMode })
+        });
+        if (!r.ok) throw new Error('Ошибка добавления');
+        showToast('Кейс добавлен', 'success');
+        document.getElementById('gameTitle').value = '';
+        document.getElementById('gameDescription').value = '';
+        document.getElementById('gameOpt1').value = '';
+        document.getElementById('gameOpt2').value = '';
+        document.getElementById('gameOpt3').value = '';
+        document.getElementById('gameOpt4').value = '';
+        document.getElementById('gameProtocol').value = '';
+        await loadGameCases();
+        newGameCase();
+    } catch (e) {
+        showToast('Ошибка: ' + e.message, 'error');
+    }
+}
+
+// ============================================================
+//  ДОКУМЕНТЫ
+// ============================================================
+let cameraType = null;
+let cameraStream = null;
+
+async function captureDocument(type) {
+    cameraType = type;
+    document.getElementById('cameraTitle').textContent = `📷 Сканирование: ${type}`;
+    document.getElementById('cameraModal').classList.add('open');
+    try {
+        cameraStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
+        document.getElementById('cameraVideo').srcObject = cameraStream;
+    } catch (e) {
+        showToast('Нет доступа к камере', 'error');
+        closeCamera();
+    }
+}
+
+function closeCamera() {
+    if (cameraStream) {
+        cameraStream.getTracks().forEach(t => t.stop());
+        cameraStream = null;
+    }
+    document.getElementById('cameraModal').classList.remove('open');
+}
+
+function capturePhoto() {
+    const video = document.getElementById('cameraVideo');
+    const canvas = document.getElementById('cameraCanvas');
+    canvas.width = video.videoWidth || 640;
+    canvas.height = video.videoHeight || 480;
+    canvas.getContext('2d').drawImage(video, 0, 0);
+    const dataUrl = canvas.toDataURL('image/jpeg');
+    closeCamera();
+    processDocumentImage(dataUrl, cameraType);
+}
+
+function processDocumentFile(event, type) {
+    const file = event.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (e) => processDocumentImage(e.target.result, type);
+    reader.readAsDataURL(file);
+    event.target.value = '';
+}
+
+function processDocumentImage(dataUrl, type) {
+    const maxImages = type === 'ecg' ? 4 : 1;
+    if (documentData[type].images.length >= maxImages) {
+        showToast(`Максимум ${maxImages} фото`, 'error');
+        return;
+    }
+    documentData[type].images.push(dataUrl);
+    renderDocumentPreview(type);
+    showToast('Фото добавлено', 'success');
+}
+
+function renderDocumentPreview(type) {
+    const container = document.getElementById(`${type}Preview`);
+    if (!container) return;
+    container.innerHTML = documentData[type].images.map((img, i) => `
+        <div style="position:relative;display:inline-block;">
+            <img src="${img}" style="width:60px;height:60px;object-fit:cover;border-radius:8px;border:1px solid var(--border-color);">
+            <button onclick="removeDocumentImage('${type}', ${i})" style="position:absolute;top:-6px;right:-6px;background:#dc2626;color:white;border:none;border-radius:50%;width:20px;height:20px;font-size:12px;cursor:pointer;">✕</button>
+        </div>
+    `).join('');
+}
+
+function removeDocumentImage(type, index) {
+    documentData[type].images.splice(index, 1);
+    renderDocumentPreview(type);
+}
+
+// ============================================================
+//  СОХРАНЕНИЕ ВЫЗОВА
+// ============================================================
+async function saveCall() {
+    if (!currentPatient || !currentAnalysis) {
+        showToast('Сначала проведите анализ', 'error');
+        return;
+    }
+    const fio = document.getElementById('patientFio').value.trim() || 'Не указано';
+    const birth = document.getElementById('patientBirth').value.trim();
+    const address = document.getElementById('patientAddress').value.trim();
+    
+    const btn = document.querySelector('#resultContainer .btn-primary');
+    btn.disabled = true;
+    btn.textContent = '⏳ Сохранение...';
+    
+    try {
+        const finalDiagnosis = currentAnalysis.possible_diagnoses?.[0]?.name || null;
+        const payload = {
+            patient: currentPatient,
+            analysis: currentAnalysis,
+            final_diagnosis: finalDiagnosis,
+            fio: fio,
+            birth_date: birth,
+            address: address,
+            has_ecg: documentData.ecg.images.length > 0,
+            has_passport: documentData.passport.images.length > 0,
+            has_oms: documentData.oms.images.length > 0,
+            has_signature: documentData.signature.images.length > 0
+        };
+        const r = await fetch('/api/save_call', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+            body: JSON.stringify(payload)
+        });
+        if (!r.ok) throw new Error('Ошибка сохранения');
+        showToast('✅ Вызов сохранён!', 'success');
+        loadHistory();
+    } catch (e) {
+        showToast('Ошибка: ' + e.message, 'error');
+    } finally {
+        btn.disabled = false;
+        btn.textContent = '💾 Сохранить вызов';
+    }
+}
+
+// ============================================================
+//  УВЕЛИЧЕНИЕ ДЛЯ СЛАБОВИДЯЩИХ
+// ============================================================
+function toggleScale() {
+    currentScale = currentScale % 3 + 1;
+    document.body.className = `scale-${currentScale}`;
+    document.getElementById('scaleLabel').textContent = currentScale + 'x';
+    localStorage.setItem('scale', currentScale);
+}
+
+// ============================================================
+//  ТЕМЫ (светлая/тёмная)
+// ============================================================
+function toggleTheme() {
+    const isDark = document.body.style.background === '#1a202c';
+    document.body.style.background = isDark ? 'var(--bg-body)' : '#1a202c';
+    document.body.style.color = isDark ? 'var(--text-primary)' : '#e2e8f0';
+    // Простая смена — можно расширить
+    showToast(isDark ? 'Светлая тема' : 'Тёмная тема', 'info');
 }
 
 // ============================================================
 //  TOAST
 // ============================================================
 function showToast(msg, type = 'info') {
-    const container = document.getElementById('toastContainer');
-    const colors = { success: '#22c55e', error: '#ef4444', info: '#3b82f6' };
+    const colors = { success: '#16a34a', error: '#dc2626', info: '#0c4a6e' };
     const toast = document.createElement('div');
-    toast.className = `toast toast-${type}`;
-    toast.style.background = colors[type] || '#3b82f6';
+    toast.style.cssText = `
+        position:fixed;bottom:20px;left:50%;transform:translateX(-50%);
+        background:${colors[type]};color:white;padding:12px 24px;
+        border-radius:12px;font-weight:500;z-index:9999;
+        box-shadow:0 4px 12px rgba(0,0,0,0.2);max-width:90%;text-align:center;
+        animation:fadeIn 0.3s ease;
+    `;
     toast.textContent = msg;
-    container.appendChild(toast);
+    document.body.appendChild(toast);
     setTimeout(() => {
         toast.style.opacity = '0';
-        toast.style.transform = 'translateX(100px)';
+        toast.style.transform = 'translateX(-50%) translateY(20px)';
         setTimeout(() => toast.remove(), 300);
-    }, 4000);
+    }, 3000);
 }
 
-console.log('🚑 Assistant SMP v2.0 FINAL загружен!');
-</script>
+// ============================================================
+//  ВХОД ПО НОМЕРУ / ЛОГИНУ
+// ============================================================
+document.addEventListener('DOMContentLoaded', function() {
+    const phoneBtn = document.getElementById('loginTypePhone');
+    const userBtn = document.getElementById('loginTypeUsername');
+    const input = document.getElementById('loginInput');
+    
+    phoneBtn.addEventListener('click', function() {
+        input.placeholder = 'Номер телефона (+7...)';
+        phoneBtn.style.background = 'var(--primary)';
+        phoneBtn.style.color = 'white';
+        userBtn.style.background = 'transparent';
+        userBtn.style.color = 'var(--primary)';
+    });
+    
+    userBtn.addEventListener('click', function() {
+        input.placeholder = 'Имя пользователя (логин)';
+        userBtn.style.background = 'var(--primary)';
+        userBtn.style.color = 'white';
+        phoneBtn.style.background = 'transparent';
+        phoneBtn.style.color = 'var(--primary)';
+    });
+    
+    // Восстанавливаем масштаб
+    document.body.className = `scale-${currentScale}`;
+    document.getElementById('scaleLabel').textContent = currentScale + 'x';
+});
 
+// ============================================================
+//  ЗАПУСК
+// ============================================================
+if (token && user) enterApp();
+console.log('🚑 Assistant SMP v2.0 загружен!');
+</script>
 </body>
 </html>
