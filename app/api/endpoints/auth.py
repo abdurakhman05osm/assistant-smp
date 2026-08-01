@@ -9,7 +9,7 @@ from app.api.deps import get_current_admin
 import uuid
 
 router = APIRouter(prefix="/auth", tags=["auth"])
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+pwd_context = CryptContext(schemes=["pbkdf2_sha256"], deprecated="auto")
 
 # Инициализация БД при первом импорте
 init_db()

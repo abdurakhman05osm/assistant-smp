@@ -36,7 +36,7 @@ app.include_router(history.router)
 def startup():
     """Создаём админа при первом запуске"""
     init_db()
-    pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+    pwd_context = CryptContext(schemes=["pbkdf2_sha256"], deprecated="auto")
     
     if not get_user_by_username("admin"):
         user_id = str(uuid.uuid4())[:8]
