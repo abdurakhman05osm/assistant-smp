@@ -5,33 +5,39 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=3.0, user-scalable=yes">
     <title>Assistant SMP</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🚑</text></svg>">
     <style>
         :root {
             --primary: #0c4a6e;
             --primary-light: #e8f0fe;
             --primary-dark: #082f4a;
-            --bg-body: #f5f9ff;
+            --bg-body: #f3f4f6;
             --bg-card: #ffffff;
             --text-primary: #1f2937;
             --text-secondary: #4b5563;
             --border-color: #d1d9e6;
-            --shadow: 0 8px 24px rgba(12, 74, 110, 0.10);
-            --radius: 16px;
+            --shadow: 0 4px 12px rgba(0,0,0,0.08);
+            --radius: 12px;
             --font-base: 16px;
         }
         body {
             font-size: var(--font-base);
             background: var(--bg-body);
             color: var(--text-primary);
-            transition: font-size 0.2s ease;
+            transition: all 0.2s ease;
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             line-height: 1.6;
         }
         body.scale-1 { --font-base: 16px; }
         body.scale-2 { --font-base: 24px; }
         body.scale-3 { --font-base: 32px; }
-
+        body.dark-mode {
+            --bg-body: #1a202c;
+            --bg-card: #2d3748;
+            --text-primary: #e2e8f0;
+            --text-secondary: #a0aec0;
+            --border-color: #4a5568;
+            --shadow: 0 4px 12px rgba(0,0,0,0.3);
+        }
         .card {
             background: var(--bg-card);
             border-radius: var(--radius);
@@ -41,13 +47,12 @@
             border: 1px solid var(--border-color);
             transition: all 0.2s;
         }
-        .card:hover { box-shadow: 0 12px 32px rgba(12, 74, 110, 0.15); }
-
+        .card:hover { box-shadow: 0 6px 20px rgba(0,0,0,0.12); }
         .btn-primary {
-            background: var(--primary);
+            background: #0c4a6e;
             color: white;
             padding: 12px 24px;
-            border-radius: 10px;
+            border-radius: 8px;
             border: none;
             font-weight: 600;
             font-size: 1rem;
@@ -56,27 +61,25 @@
             width: 100%;
             min-height: 48px;
         }
-        .btn-primary:hover { background: var(--primary-dark); transform: scale(1.02); }
-        .btn-primary:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
-
+        .btn-primary:hover { background: #082f4a; transform: scale(1.02); }
+        .btn-primary:disabled { opacity: 0.6; cursor: not-allowed; }
         .btn-outline {
             background: transparent;
-            color: var(--primary);
+            color: #0c4a6e;
             padding: 10px 20px;
-            border-radius: 10px;
-            border: 2px solid var(--primary);
+            border-radius: 8px;
+            border: 2px solid #0c4a6e;
             font-weight: 600;
             cursor: pointer;
             transition: all 0.2s;
             min-height: 44px;
         }
-        .btn-outline:hover { background: var(--primary-light); }
-
+        .btn-outline:hover { background: #e8f0fe; }
         .btn-danger {
             background: #dc2626;
             color: white;
             padding: 8px 16px;
-            border-radius: 8px;
+            border-radius: 6px;
             border: none;
             font-weight: 600;
             cursor: pointer;
@@ -84,12 +87,11 @@
             min-height: 40px;
         }
         .btn-danger:hover { background: #b91c1c; }
-
         .input-field {
             width: 100%;
             padding: 12px 16px;
-            border: 2px solid var(--border-color);
-            border-radius: 10px;
+            border: 2px solid #d1d9e6;
+            border-radius: 8px;
             font-size: 1rem;
             background: white;
             transition: all 0.2s;
@@ -97,55 +99,52 @@
         }
         .input-field:focus {
             outline: none;
-            border-color: var(--primary);
-            box-shadow: 0 0 0 3px rgba(12, 74, 110, 0.15);
+            border-color: #0c4a6e;
+            box-shadow: 0 0 0 3px rgba(12, 74, 110, 0.12);
         }
-
         .header {
-            background: var(--primary);
+            background: #0c4a6e;
             color: white;
-            padding: 12px 20px;
+            padding: 10px 20px;
             border-radius: 0 0 var(--radius) var(--radius);
             display: flex;
             justify-content: space-between;
             align-items: center;
             flex-wrap: wrap;
-            gap: 10px;
-            margin-bottom: 20px;
+            gap: 8px;
+            margin-bottom: 16px;
         }
         .header .logo {
-            font-size: 1.4rem;
+            font-size: 1.3rem;
             font-weight: 700;
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 8px;
             cursor: pointer;
             transition: opacity 0.2s;
         }
         .header .logo:hover { opacity: 0.85; }
-        .header .logo span { font-size: 1.8rem; }
         .header-actions {
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: 6px;
             flex-wrap: wrap;
         }
         .header-actions button {
             background: rgba(255,255,255,0.15);
-            border: 1px solid rgba(255,255,255,0.3);
+            border: 1px solid rgba(255,255,255,0.25);
             color: white;
-            padding: 8px 14px;
-            border-radius: 10px;
+            padding: 6px 12px;
+            border-radius: 8px;
             cursor: pointer;
-            font-size: 1.1rem;
+            font-size: 1rem;
             transition: all 0.2s;
-            min-height: 44px;
+            min-height: 38px;
             display: flex;
             align-items: center;
-            gap: 6px;
+            gap: 4px;
         }
         .header-actions button:hover { background: rgba(255,255,255,0.25); }
-
         .tabs {
             display: flex;
             gap: 4px;
@@ -158,139 +157,167 @@
             border: 1px solid var(--border-color);
         }
         .tab {
-            padding: 10px 16px;
-            border-radius: 10px;
+            padding: 8px 16px;
+            border-radius: 8px;
             cursor: pointer;
             font-weight: 500;
             transition: all 0.2s;
-            font-size: 0.95rem;
+            font-size: 0.9rem;
             background: transparent;
             border: none;
             color: var(--text-secondary);
             flex: 1;
             text-align: center;
-            min-height: 44px;
+            min-height: 40px;
             display: flex;
             align-items: center;
             justify-content: center;
             gap: 6px;
         }
         .tab.active {
-            background: var(--primary);
+            background: #0c4a6e;
             color: white;
         }
-        .tab:not(.active):hover { background: var(--primary-light); }
+        .tab:not(.active):hover { background: #e8f0fe; }
         .tab-content { display: none; }
         .tab-content.active { display: block; }
-
         .vital-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-            gap: 10px;
-            margin-bottom: 16px;
+            grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+            gap: 8px;
+            margin-bottom: 12px;
         }
         .vital-card {
             background: var(--bg-card);
             border: 2px solid var(--border-color);
-            border-radius: 12px;
-            padding: 12px;
+            border-radius: 10px;
+            padding: 10px;
             text-align: center;
             cursor: pointer;
             transition: all 0.2s;
         }
-        .vital-card:hover { border-color: var(--primary); transform: translateY(-2px); }
-        .vital-card .icon { font-size: 1.8rem; display: block; }
-        .vital-card .value { font-weight: 700; font-size: 1.2rem; }
-        .vital-card .label { font-size: 0.8rem; color: var(--text-secondary); }
-
+        .vital-card:hover { border-color: #0c4a6e; transform: translateY(-2px); }
+        .vital-card .icon { font-size: 1.6rem; display: block; }
+        .vital-card .value { font-weight: 700; font-size: 1.1rem; }
+        .vital-card .label { font-size: 0.7rem; color: var(--text-secondary); }
         .diagnosis-card {
             background: var(--bg-card);
-            border-left: 4px solid var(--primary);
-            border-radius: 10px;
-            padding: 14px 16px;
-            margin-bottom: 10px;
+            border-left: 4px solid #0c4a6e;
+            border-radius: 8px;
+            padding: 12px 16px;
+            margin-bottom: 8px;
             cursor: pointer;
             transition: all 0.2s;
             border: 1px solid var(--border-color);
         }
-        .diagnosis-card:hover { box-shadow: var(--shadow); }
+        .diagnosis-card:hover { box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
         .diagnosis-card .header { display: flex; justify-content: space-between; align-items: center; }
         .diagnosis-card .name { font-weight: 600; }
-        .diagnosis-card .prob { font-weight: 700; color: var(--primary); }
+        .diagnosis-card .prob { font-weight: 700; color: #0c4a6e; }
         .diagnosis-card .bar { height: 6px; background: #e5e7eb; border-radius: 3px; margin-top: 6px; overflow: hidden; }
-        .diagnosis-card .bar .fill { height: 100%; background: var(--primary); border-radius: 3px; transition: width 0.6s; }
-
+        .diagnosis-card .bar .fill { height: 100%; background: #0c4a6e; border-radius: 3px; transition: width 0.4s; }
+        .diagnosis-details {
+            display: none;
+            margin-top: 10px;
+            padding: 12px;
+            background: #f8fafc;
+            border-radius: 8px;
+            border: 1px solid #d1d9e6;
+        }
+        .diagnosis-details.open { display: block; }
+        .diagnosis-details .symptom-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 4px 0;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        .diagnosis-details .symptom-item:last-child { border-bottom: none; }
+        .diagnosis-details .symptom-item .matched { color: #16a34a; }
+        .diagnosis-details .symptom-item .missing { color: #dc2626; }
         .question-item {
             background: var(--bg-card);
             border: 1px solid var(--border-color);
-            border-radius: 10px;
-            padding: 12px 16px;
+            border-radius: 8px;
+            padding: 10px 14px;
             margin-bottom: 8px;
             transition: all 0.3s;
         }
         .question-item.answered { display: none; }
-        .question-item .flex-row { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
-        .question-item .flex-row input { flex: 1; min-width: 120px; }
-        .quick-values { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 6px; }
+        .question-item .flex-row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+        .question-item .flex-row input { flex: 1; min-width: 100px; background: var(--bg-card); color: var(--text-primary); }
+        .quick-values { display: flex; gap: 4px; flex-wrap: wrap; margin-top: 4px; }
         .quick-values button {
-            padding: 4px 12px;
-            border-radius: 20px;
+            padding: 4px 10px;
+            border-radius: 16px;
             border: 1px solid var(--border-color);
-            background: white;
+            background: var(--bg-card);
+            color: var(--text-primary);
             cursor: pointer;
-            font-size: 0.85rem;
+            font-size: 0.8rem;
             transition: all 0.2s;
         }
-        .quick-values button:hover { background: var(--primary); color: white; border-color: var(--primary); }
-
+        .quick-values button:hover { background: #0c4a6e; color: white; border-color: #0c4a6e; }
         .footer {
-            margin-top: 30px;
-            padding: 20px;
-            background: var(--primary);
-            color: white;
+            margin-top: 24px;
+            padding: 12px 20px;
+            background: var(--bg-card);
             border-radius: var(--radius) var(--radius) 0 0;
+            border: 1px solid var(--border-color);
             text-align: center;
-            font-size: 1rem;
+            font-size: 0.9rem;
+            box-shadow: var(--shadow);
         }
-        .footer a { color: #93c5fd; text-decoration: none; }
-        .footer a:hover { text-decoration: underline; }
-        .footer .divider {
-            display: inline-block;
-            margin: 0 12px;
-            opacity: 0.4;
-            font-weight: 300;
+        .footer .contact-btn {
+            background: #0c4a6e;
+            color: white;
+            padding: 8px 20px;
+            border-radius: 8px;
+            border: none;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 0.9rem;
         }
-        .footer .icon { font-size: 1.2rem; margin-right: 6px; }
-
+        .footer .contact-btn:hover { background: #082f4a; transform: scale(1.02); }
+        .footer .contact-details {
+            display: none;
+            margin-top: 10px;
+            padding-top: 10px;
+            border-top: 1px solid var(--border-color);
+        }
+        .footer .contact-details.open { display: block; }
+        .footer .contact-details a { color: #0c4a6e; text-decoration: none; font-weight: 500; }
+        .footer .contact-details a:hover { text-decoration: underline; }
         .mode-selector {
             display: flex;
-            gap: 8px;
+            gap: 6px;
             margin-bottom: 12px;
             flex-wrap: wrap;
         }
         .mode-selector button {
-            padding: 8px 16px;
+            padding: 6px 14px;
             border-radius: 20px;
             border: 2px solid var(--border-color);
-            background: white;
+            background: var(--bg-card);
+            color: var(--text-primary);
             cursor: pointer;
             font-weight: 500;
             transition: all 0.2s;
             flex: 1;
-            min-height: 44px;
+            min-height: 40px;
         }
         .mode-selector button.active {
-            border-color: var(--primary);
-            background: var(--primary-light);
-            color: var(--primary);
+            border-color: #0c4a6e;
+            background: #e8f0fe;
+            color: #0c4a6e;
         }
-        .mode-selector button:hover { border-color: var(--primary); }
-
+        .mode-selector button:hover { border-color: #0c4a6e; }
         .modal-overlay {
             display: none;
             position: fixed;
             inset: 0;
-            background: rgba(0,0,0,0.6);
+            background: rgba(0,0,0,0.5);
             z-index: 999;
             justify-content: center;
             align-items: center;
@@ -305,28 +332,21 @@
             max-height: 90vh;
             overflow-y: auto;
             padding: 20px;
-            box-shadow: var(--shadow);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.2);
         }
-
         @media (max-width: 640px) {
-            .header .logo { font-size: 1.1rem; }
-            .header-actions button { padding: 6px 10px; font-size: 0.9rem; }
+            .header .logo { font-size: 1rem; }
+            .header-actions button { padding: 4px 8px; font-size: 0.8rem; min-height: 32px; }
             .tabs { overflow-x: auto; flex-wrap: nowrap; -webkit-overflow-scrolling: touch; }
-            .tab { flex: 0 0 auto; padding: 8px 14px; font-size: 0.85rem; }
-            .vital-grid { grid-template-columns: repeat(auto-fit, minmax(80px, 1fr)); gap: 6px; }
-            .card { padding: 14px; }
-            .footer { font-size: 0.85rem; padding: 16px; }
+            .tab { flex: 0 0 auto; padding: 6px 12px; font-size: 0.8rem; min-height: 32px; }
+            .vital-grid { grid-template-columns: repeat(auto-fit, minmax(70px, 1fr)); gap: 4px; }
+            .card { padding: 12px; }
+            .footer { padding: 10px 14px; font-size: 0.8rem; }
             .modal-content { margin: 10px; padding: 14px; }
         }
-        @media (max-width: 480px) {
-            .tab { font-size: 0.75rem; padding: 6px 10px; min-height: 40px; }
-            .btn-primary { font-size: 0.9rem; padding: 10px 16px; }
-            .input-field { font-size: 0.9rem; padding: 10px 12px; }
-        }
         @media (min-width: 768px) {
-            .container { max-width: 900px; margin: 0 auto; padding: 0 20px; }
+            .container { max-width: 900px; margin: 0 auto; padding: 0 16px; }
         }
-
         .hidden { display: none !important; }
         .text-center { text-align: center; }
         .mt-2 { margin-top: 8px; }
@@ -340,11 +360,9 @@
 </head>
 <body>
 <div class="container" id="app">
-    <!-- АВТОРИЗАЦИЯ -->
     <div id="authPage" class="card" style="max-width:420px;margin:40px auto;">
         <h1 class="text-center" style="font-size:1.8rem;font-weight:700;margin-bottom:8px;">🚑 Assistant SMP</h1>
         <p class="text-center" style="color:var(--text-secondary);">Войдите или зарегистрируйтесь</p>
-        
         <div id="loginForm">
             <div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap;">
                 <button id="loginTypePhone" class="btn-outline" style="flex:1;text-align:center;">📱 По номеру</button>
@@ -357,11 +375,10 @@
                 Нет аккаунта? <a href="#" onclick="showRegister()" style="color:var(--primary);font-weight:600;">Зарегистрироваться</a>
             </p>
         </div>
-
         <div id="registerForm" class="hidden">
             <input type="text" id="regUsername" placeholder="Имя пользователя (логин)" class="input-field mb-3">
             <div style="display:flex;align-items:center;gap:6px;margin-bottom:12px;">
-                <span style="background:var(--border-color);padding:12px 14px;border-radius:10px;font-weight:600;min-height:48px;display:flex;align-items:center;">+7</span>
+                <span style="background:#e5e7eb;padding:12px 14px;border-radius:8px;font-weight:600;min-height:48px;display:flex;align-items:center;">+7</span>
                 <input type="tel" id="regPhone" placeholder="XXX XXX XX XX" class="input-field" style="flex:1;">
             </div>
             <input type="password" id="regPassword" placeholder="Пароль" class="input-field mb-3">
@@ -371,22 +388,15 @@
             </p>
         </div>
     </div>
-
-    <!-- ОСНОВНОЕ ПРИЛОЖЕНИЕ -->
     <div id="appPage" class="hidden">
-        <!-- ШАПКА -->
         <div class="header">
-            <div class="logo" onclick="goHome()">
-                <span>🚑</span> Assistant SMP
-            </div>
+            <div class="logo" onclick="goHome()"><span>🚑</span> Assistant SMP</div>
             <div class="header-actions">
                 <button onclick="toggleScale()" title="Увеличение для слабовидящих">🕶️ <span id="scaleLabel">1x</span></button>
-                <button onclick="toggleTheme()" title="Сменить тему">🎨</button>
+                <button onclick="toggleTheme()" title="Сменить тему">🌓</button>
                 <button onclick="logout()" title="Выйти">🚪</button>
             </div>
         </div>
-
-        <!-- ВКЛАДКИ -->
         <div class="tabs" id="tabsContainer">
             <button class="tab active" data-tab="chat" onclick="switchTab('chat')">💬 Чат</button>
             <button class="tab" data-tab="documents" onclick="switchTab('documents')">📄 Документы</button>
@@ -395,8 +405,6 @@
             <button class="tab tab-templates" data-tab="templates" onclick="switchTab('templates')" style="display:none;">📂 Шаблоны</button>
             <button class="tab tab-users" data-tab="users" onclick="switchTab('users')" style="display:none;">👥 Пользователи</button>
         </div>
-
-        <!-- ЧАТ -->
         <div id="tab-chat" class="tab-content active">
             <div class="card">
                 <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px;">
@@ -412,57 +420,51 @@
                 </div>
             </div>
         </div>
-
-        <!-- ДОКУМЕНТЫ -->
         <div id="tab-documents" class="tab-content">
             <div class="card">
                 <h2 style="font-weight:700;margin-bottom:12px;">📄 Документы пациента</h2>
-                <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;">
-                    <div class="card" style="text-align:center;">
-                        <span style="font-size:2.8rem;">🪪</span>
-                        <div style="font-weight:600;">Паспорт</div>
-                        <button class="btn-outline" style="width:100%;margin-top:6px;" onclick="captureDocument('passport')">📷 Снять</button>
-                        <button class="btn-outline" style="width:100%;margin-top:4px;" onclick="document.getElementById('passportInput').click()">📁 Прикрепить</button>
+                <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;">
+                    <div class="card" style="text-align:center;padding:12px;">
+                        <span style="font-size:2.4rem;">🪪</span>
+                        <div style="font-weight:600;font-size:0.9rem;">Паспорт</div>
+                        <button class="btn-outline" style="width:100%;margin-top:4px;padding:6px 12px;font-size:0.8rem;" onclick="captureDocument('passport')">📷 Снять</button>
+                        <button class="btn-outline" style="width:100%;margin-top:2px;padding:6px 12px;font-size:0.8rem;" onclick="document.getElementById('passportInput').click()">📁 Прикрепить</button>
                         <input type="file" id="passportInput" accept="image/*" class="hidden" onchange="processDocumentFile(event,'passport')">
-                        <div id="passportPreview" style="display:flex;flex-wrap:wrap;gap:4px;margin-top:6px;"></div>
+                        <div id="passportPreview" style="display:flex;flex-wrap:wrap;gap:4px;margin-top:4px;"></div>
                     </div>
-                    <div class="card" style="text-align:center;">
-                        <span style="font-size:2.8rem;">🩺</span>
-                        <div style="font-weight:600;">Полис / СНИЛС</div>
-                        <button class="btn-outline" style="width:100%;margin-top:6px;" onclick="captureDocument('oms')">📷 Снять</button>
-                        <button class="btn-outline" style="width:100%;margin-top:4px;" onclick="document.getElementById('omsInput').click()">📁 Прикрепить</button>
+                    <div class="card" style="text-align:center;padding:12px;">
+                        <span style="font-size:2.4rem;">🩺</span>
+                        <div style="font-weight:600;font-size:0.9rem;">Полис / СНИЛС</div>
+                        <button class="btn-outline" style="width:100%;margin-top:4px;padding:6px 12px;font-size:0.8rem;" onclick="captureDocument('oms')">📷 Снять</button>
+                        <button class="btn-outline" style="width:100%;margin-top:2px;padding:6px 12px;font-size:0.8rem;" onclick="document.getElementById('omsInput').click()">📁 Прикрепить</button>
                         <input type="file" id="omsInput" accept="image/*" class="hidden" onchange="processDocumentFile(event,'oms')">
-                        <div id="omsPreview" style="display:flex;flex-wrap:wrap;gap:4px;margin-top:6px;"></div>
+                        <div id="omsPreview" style="display:flex;flex-wrap:wrap;gap:4px;margin-top:4px;"></div>
                     </div>
-                    <div class="card" style="text-align:center;">
-                        <span style="font-size:2.8rem;">✍️</span>
-                        <div style="font-weight:600;">Подпись</div>
-                        <button class="btn-outline" style="width:100%;margin-top:6px;" onclick="captureDocument('signature')">📷 Снять</button>
-                        <button class="btn-outline" style="width:100%;margin-top:4px;" onclick="document.getElementById('signatureInput').click()">📁 Прикрепить</button>
+                    <div class="card" style="text-align:center;padding:12px;">
+                        <span style="font-size:2.4rem;">✍️</span>
+                        <div style="font-weight:600;font-size:0.9rem;">Подпись</div>
+                        <button class="btn-outline" style="width:100%;margin-top:4px;padding:6px 12px;font-size:0.8rem;" onclick="captureDocument('signature')">📷 Снять</button>
+                        <button class="btn-outline" style="width:100%;margin-top:2px;padding:6px 12px;font-size:0.8rem;" onclick="document.getElementById('signatureInput').click()">📁 Прикрепить</button>
                         <input type="file" id="signatureInput" accept="image/*" class="hidden" onchange="processDocumentFile(event,'signature')">
-                        <div id="signaturePreview" style="display:flex;flex-wrap:wrap;gap:4px;margin-top:6px;"></div>
+                        <div id="signaturePreview" style="display:flex;flex-wrap:wrap;gap:4px;margin-top:4px;"></div>
                     </div>
-                    <div class="card" style="text-align:center;">
-                        <span style="font-size:2.8rem;">❤️</span>
-                        <div style="font-weight:600;">ЭКГ (до 4)</div>
-                        <button class="btn-outline" style="width:100%;margin-top:6px;" onclick="captureDocument('ecg')">📷 Снять</button>
-                        <button class="btn-outline" style="width:100%;margin-top:4px;" onclick="document.getElementById('ecgInput').click()">📁 Прикрепить</button>
+                    <div class="card" style="text-align:center;padding:12px;">
+                        <span style="font-size:2.4rem;">❤️</span>
+                        <div style="font-weight:600;font-size:0.9rem;">ЭКГ (до 4)</div>
+                        <button class="btn-outline" style="width:100%;margin-top:4px;padding:6px 12px;font-size:0.8rem;" onclick="captureDocument('ecg')">📷 Снять</button>
+                        <button class="btn-outline" style="width:100%;margin-top:2px;padding:6px 12px;font-size:0.8rem;" onclick="document.getElementById('ecgInput').click()">📁 Прикрепить</button>
                         <input type="file" id="ecgInput" accept="image/*" multiple class="hidden" onchange="processDocumentFile(event,'ecg')">
-                        <div id="ecgPreview" style="display:flex;flex-wrap:wrap;gap:4px;margin-top:6px;"></div>
+                        <div id="ecgPreview" style="display:flex;flex-wrap:wrap;gap:4px;margin-top:4px;"></div>
                     </div>
                 </div>
             </div>
         </div>
-
-        <!-- ИСТОРИЯ -->
         <div id="tab-history" class="tab-content">
             <div class="card">
                 <h2 style="font-weight:700;margin-bottom:12px;">📋 История вызовов</h2>
                 <div id="historyList"><p style="color:var(--text-secondary);">Загрузка...</p></div>
             </div>
         </div>
-
-        <!-- ИГРА -->
         <div id="tab-game" class="tab-content">
             <div class="card">
                 <h2 style="font-weight:700;margin-bottom:12px;">🎮 Клинические кейсы</h2>
@@ -473,16 +475,16 @@
                 </div>
                 <div id="gameContainer">
                     <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:12px;">
-                        <span style="font-weight:600;">Счёт: <span id="gameScore" style="color:var(--primary);font-size:1.4rem;">0</span></span>
+                        <span style="font-weight:600;">Счёт: <span id="gameScore" style="color:#0c4a6e;font-size:1.4rem;">0</span></span>
                         <button class="btn-outline" onclick="newGameCase()">🎲 Новый кейс</button>
                     </div>
-                    <div id="gameQuestion" class="card" style="background:var(--primary-light);border-color:var(--primary);">
+                    <div id="gameQuestion" class="card" style="background:#e8f0fe;border-color:#0c4a6e;">
                         <p style="font-weight:500;">Нажмите «Новый кейс» для начала</p>
                     </div>
                     <div id="gameOptions" style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px;"></div>
                     <div id="gameResult" class="hidden card" style="margin-top:12px;"></div>
                 </div>
-                <div id="addGameCaseForm" class="hidden card" style="margin-top:16px;border:2px dashed var(--primary);">
+                <div id="addGameCaseForm" class="hidden card" style="margin-top:16px;border:2px dashed #0c4a6e;">
                     <h3 style="font-weight:600;margin-bottom:8px;">➕ Добавить кейс</h3>
                     <input type="text" id="gameTitle" placeholder="Название кейса" class="input-field mb-3">
                     <textarea id="gameDescription" rows="3" placeholder="Описание ситуации" class="input-field mb-3"></textarea>
@@ -503,8 +505,6 @@
                 </div>
             </div>
         </div>
-
-        <!-- ШАБЛОНЫ -->
         <div id="tab-templates" class="tab-content">
             <div class="card">
                 <h2 style="font-weight:700;margin-bottom:12px;">📂 Шаблоны (диагнозы, жалобы, анамнезы)</h2>
@@ -525,38 +525,29 @@
                 <div id="templatesList"><p style="color:var(--text-secondary);">Загрузка...</p></div>
             </div>
         </div>
-
-        <!-- ПОЛЬЗОВАТЕЛИ -->
         <div id="tab-users" class="tab-content">
             <div class="card">
                 <h2 style="font-weight:700;margin-bottom:12px;">👥 Управление пользователями</h2>
                 <div id="usersList"><p style="color:var(--text-secondary);">Загрузка...</p></div>
             </div>
         </div>
-
-        <!-- ПОДВАЛ -->
         <div class="footer">
-            <div style="font-size:1.2rem;font-weight:600;letter-spacing:1px;margin-bottom:4px;">
-                👨‍⚕️ Османов А.
-            </div>
-            <div style="font-size:1rem;opacity:0.9;">
-                📞 <a href="tel:+79285551774">+7 928 555 17 74</a>
-            </div>
-            <div style="margin-top:8px;font-size:0.85rem;opacity:0.6;">
-                ⚕️ Assistant SMP v2.0 · Медицинский помощник
+            <button class="contact-btn" onclick="toggleContact()">📞 Связаться</button>
+            <div class="contact-details" id="contactDetails">
+                <div style="font-weight:600;font-size:1.1rem;">👨‍⚕️ Османов А.</div>
+                <div><a href="tel:+79285551774">📞 +7 928 555 17 74</a></div>
+                <div style="margin-top:4px;font-size:0.8rem;color:var(--text-secondary);">⚕️ Assistant SMP v2.0</div>
             </div>
         </div>
     </div>
 </div>
-
-<!-- МОДАЛКИ -->
 <div id="cameraModal" class="modal-overlay">
     <div class="modal-content">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
             <h3 style="font-weight:700;" id="cameraTitle">📷 Сканирование</h3>
             <button onclick="closeCamera()" style="background:none;border:none;font-size:1.6rem;cursor:pointer;">✕</button>
         </div>
-        <video id="cameraVideo" autoplay playsinline style="width:100%;border-radius:10px;background:black;"></video>
+        <video id="cameraVideo" autoplay playsinline style="width:100%;border-radius:8px;background:black;"></video>
         <div style="display:flex;gap:10px;margin-top:12px;">
             <button class="btn-primary" onclick="capturePhoto()" style="flex:1;">📸 Снять</button>
             <button class="btn-danger" onclick="closeCamera()" style="flex:1;">✖ Отмена</button>
@@ -564,7 +555,6 @@
         <canvas id="cameraCanvas" style="display:none;"></canvas>
     </div>
 </div>
-
 <div id="historyViewModal" class="modal-overlay">
     <div class="modal-content">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
@@ -574,7 +564,6 @@
         <div id="historyViewBody"><p style="color:var(--text-secondary);">Загрузка...</p></div>
     </div>
 </div>
-
 <div id="editModal" class="modal-overlay">
     <div class="modal-content">
         <h3 style="font-weight:700;margin-bottom:12px;" id="editModalTitle">✏️ Редактировать</h3>
@@ -585,11 +574,7 @@
         </div>
     </div>
 </div>
-
 <script>
-// ============================================================
-//  ГЛОБАЛЬНЫЕ ПЕРЕМЕННЫЕ
-// ============================================================
 let token = localStorage.getItem('token') || null;
 let user = JSON.parse(localStorage.getItem('user') || 'null');
 let currentPatient = null;
@@ -600,7 +585,6 @@ let gameScore = 0;
 let currentGameCase = null;
 let gameAnswered = false;
 let currentGameMode = 'diagnostic';
-let currentTheme = 'light';
 let currentScale = parseInt(localStorage.getItem('scale') || '1');
 let documentData = {
     passport: { images: [] },
@@ -609,9 +593,7 @@ let documentData = {
     ecg: { images: [] }
 };
 
-// ============================================================
-//  АВТОРИЗАЦИЯ
-// ============================================================
+// ===== АВТОРИЗАЦИЯ =====
 function showRegister() {
     document.getElementById('loginForm').classList.add('hidden');
     document.getElementById('registerForm').classList.remove('hidden');
@@ -620,7 +602,6 @@ function showLogin() {
     document.getElementById('registerForm').classList.add('hidden');
     document.getElementById('loginForm').classList.remove('hidden');
 }
-
 async function register() {
     const username = document.getElementById('regUsername').value.trim();
     const phone = '+7' + document.getElementById('regPhone').value.replace(/\D/g, '');
@@ -646,7 +627,6 @@ async function register() {
         showToast('Ошибка: ' + e.message, 'error');
     }
 }
-
 async function login() {
     const login = document.getElementById('loginInput').value.trim();
     const password = document.getElementById('loginPassword').value.trim();
@@ -675,7 +655,6 @@ async function login() {
         showToast('Ошибка: ' + e.message, 'error');
     }
 }
-
 function logout() {
     localStorage.removeItem('token');
     localStorage.removeItem('user');
@@ -685,12 +664,12 @@ function logout() {
     document.getElementById('authPage').classList.remove('hidden');
     showToast('Вы вышли', 'info');
 }
-
 function enterApp() {
     document.getElementById('authPage').classList.add('hidden');
     document.getElementById('appPage').classList.remove('hidden');
+    user = JSON.parse(localStorage.getItem('user') || 'null');
     document.getElementById('userName').textContent = user?.username || '—';
-    setupRoles();
+    setupRoles(user?.role || 'user');
     loadTemplates();
     loadHistory();
     loadUsers();
@@ -698,32 +677,17 @@ function enterApp() {
     switchTab('chat');
     newGameCase();
 }
-
-// ============================================================
-//  РОЛИ
-// ============================================================
-function setupRoles() {
-    const role = user?.role || 'user';
+function setupRoles(role) {
     const isAdmin = role === 'admin';
     const isModerator = role === 'moderator' || isAdmin;
-    
-    // Шаблоны: видят admin и moderator
     document.querySelectorAll('.tab-templates').forEach(el => {
         el.style.display = isModerator ? '' : 'none';
     });
-    // Пользователи: только admin
     document.querySelectorAll('.tab-users').forEach(el => {
         el.style.display = isAdmin ? '' : 'none';
     });
-    // Форма добавления кейсов: admin и moderator
     document.getElementById('addGameCaseForm').classList.toggle('hidden', !isModerator);
-    // Кнопка удаления шаблонов: только admin (показывается в списке)
-    // Кнопка добавления шаблона — видна обоим (она уже есть)
 }
-
-// ============================================================
-//  ВКЛАДКИ
-// ============================================================
 function switchTab(tab) {
     document.querySelectorAll('.tab').forEach(el => el.classList.remove('active'));
     document.querySelector(`.tab[data-tab="${tab}"]`)?.classList.add('active');
@@ -734,24 +698,30 @@ function switchTab(tab) {
     if (tab === 'users') loadUsers();
     if (tab === 'game') loadGameCases();
 }
-
 function goHome() {
     switchTab('chat');
     window.scrollTo({ top: 0, behavior: 'smooth' });
 }
-
-// ============================================================
-//  АНАЛИЗ (ЧАТ)
-// ============================================================
+function toggleContact() {
+    document.getElementById('contactDetails').classList.toggle('open');
+}
+function toggleTheme() {
+    document.body.classList.toggle('dark-mode');
+    showToast(document.body.classList.contains('dark-mode') ? 'Тёмная тема' : 'Светлая тема', 'info');
+}
+function toggleScale() {
+    currentScale = currentScale % 3 + 1;
+    document.body.className = 'scale-' + currentScale;
+    document.getElementById('scaleLabel').textContent = currentScale + 'x';
+    localStorage.setItem('scale', currentScale);
+}
 async function analyze() {
     const text = document.getElementById('inputText').value.trim();
     if (!text) { showToast('Введите текст для анализа', 'error'); return; }
     currentText = text;
-    
     const btn = document.querySelector('#tab-chat .btn-primary');
     btn.disabled = true;
     btn.textContent = '⏳ Анализ...';
-    
     try {
         const r = await fetch('/api/parse', {
             method: 'POST',
@@ -772,14 +742,12 @@ async function analyze() {
         btn.textContent = '🔍 Извлечь данные и провести анализ';
     }
 }
-
 function displayResults(data) {
     const container = document.getElementById('resultContainer');
     container.classList.remove('hidden');
     const p = data.patient;
     const analysis = data.analysis || {};
     let html = '';
-    
     if (p.extracted_data && Object.keys(p.extracted_data).length > 0) {
         html += `<div class="vital-grid">`;
         for (const [key, val] of Object.entries(p.extracted_data)) {
@@ -791,56 +759,43 @@ function displayResults(data) {
         }
         html += `</div>`;
     }
-    
     if (p.complaints && p.complaints.length && p.complaints[0] !== 'Жалобы не указаны') {
-        html += `<div class="card" style="background:var(--primary-light);border-color:var(--primary);">
-                    <strong>📋 Жалобы:</strong> ${p.complaints.join('; ')}
-                 </div>`;
+        html += `<div class="card" style="background:#e8f0fe;border-color:#0c4a6e;"><strong>📋 Жалобы:</strong> ${p.complaints.join('; ')}</div>`;
     }
-    
     if (p.medical_history) {
-        html += `<div class="card" style="background:var(--primary-light);border-color:var(--primary);">
-                    <strong>📖 Анамнез:</strong> ${p.medical_history}
-                 </div>`;
+        html += `<div class="card" style="background:#e8f0fe;border-color:#0c4a6e;"><strong>📖 Анамнез:</strong> ${p.medical_history}</div>`;
     }
-    
     if (analysis.red_flags && analysis.red_flags.length) {
-        html += `<div class="card" style="background:#fee2e2;border-color:#dc2626;color:#991b1b;">
-                    <strong>🚨 Критические признаки:</strong>
-                    <ul style="list-style:disc;padding-left:20px;margin-top:6px;">
-                        ${analysis.red_flags.map(f => `<li>${f}</li>`).join('')}
-                    </ul>
-                 </div>`;
+        html += `<div class="card" style="background:#fee2e2;border-color:#dc2626;color:#991b1b;"><strong>🚨 Критические признаки:</strong><ul style="list-style:disc;padding-left:20px;margin-top:6px;">${analysis.red_flags.map(f => `<li>${f}</li>`).join('')}</ul></div>`;
     }
-    
     if (analysis.possible_diagnoses && analysis.possible_diagnoses.length) {
-        html += `<div><strong>📊 Дифференциальный диагноз (топ-3):</strong></div>`;
-        const top3 = analysis.possible_diagnoses.slice(0, 3);
-        for (const diag of top3) {
-            html += `<div class="diagnosis-card" onclick="toggleProtocol('${diag.id}')">
-                        <div class="header">
-                            <span class="name">${diag.name}</span>
-                            <span class="prob">${diag.probability}%</span>
-                        </div>
-                        <div style="font-size:0.85rem;color:var(--text-secondary);">
-                            ${diag.icd10 ? `МКБ-10: ${diag.icd10}` : ''}
-                            (${diag.matched_symptoms}/${diag.total_symptoms} симптомов)
-                        </div>
-                        <div class="bar"><div class="fill" style="width:${Math.min(diag.probability, 100)}%;"></div></div>
-                        <div id="protocol-${diag.id}" style="display:none;margin-top:8px;padding:10px;background:var(--bg-body);border-radius:8px;">
-                            <strong>Протокол:</strong>
-                            <div style="white-space:pre-line;font-size:0.9rem;">${diag.protocol || 'Не указан'}</div>
-                        </div>
-                     </div>`;
+        html += `<div><strong>📊 Дифференциальный диагноз:</strong></div>`;
+        const filtered = analysis.possible_diagnoses.filter(d => d.probability > 30);
+        let displayDiagnoses = filtered.length >= 3 ? filtered.slice(0, 3) : analysis.possible_diagnoses.slice(0, 3);
+        for (const diag of displayDiagnoses) {
+            html += `
+                <div class="diagnosis-card" onclick="toggleDiagnosisDetails('${diag.id}')" id="diag-${diag.id}">
+                    <div class="header"><span class="name">${diag.name}</span><span class="prob">${diag.probability}%</span></div>
+                    <div style="font-size:0.85rem;color:var(--text-secondary);">${diag.icd10 ? `МКБ-10: ${diag.icd10}` : ''} (${diag.matched_symptoms}/${diag.total_symptoms} симптомов)</div>
+                    <div class="bar"><div class="fill" style="width:${Math.min(diag.probability, 100)}%;"></div></div>
+                    <div class="diagnosis-details" id="details-${diag.id}">
+                        <div style="margin-bottom:6px;"><strong>Симптомы:</strong></div>
+                        ${diag.matched_symptom_list && diag.matched_symptom_list.length ? diag.matched_symptom_list.map(s => `
+                            <div class="symptom-item"><input type="checkbox" checked onchange="recalcDiagnosis('${diag.id}', '${s}', false)"><span class="matched">✅ ${s}</span></div>
+                        `).join('') : ''}
+                        ${diag.missing_symptom_list && diag.missing_symptom_list.length ? diag.missing_symptom_list.map(s => `
+                            <div class="symptom-item"><input type="checkbox" onchange="recalcDiagnosis('${diag.id}', '${s}', true)"><span class="missing">❌ ${s}</span></div>
+                        `).join('') : ''}
+                        ${diag.protocol ? `<div style="margin-top:8px;padding-top:8px;border-top:1px solid #e5e7eb;"><strong>Протокол:</strong><div style="white-space:pre-line;font-size:0.9rem;">${diag.protocol}</div></div>` : ''}
+                    </div>
+                </div>
+            `;
         }
         html += `</div>`;
     }
-    
-    // Уточняющие вопросы
     let allQuestions = [];
     if (analysis.questions) allQuestions = [...analysis.questions];
     if (analysis.new_questions) allQuestions = [...allQuestions, ...analysis.new_questions];
-    
     if (allQuestions.length) {
         html += `<div class="mt-4"><strong>❓ Уточняющие вопросы</strong></div>`;
         const answeredQuestions = JSON.parse(localStorage.getItem('answeredQuestions') || '[]');
@@ -851,12 +806,10 @@ function displayResults(data) {
                     <div class="flex-row">
                         <span>❓</span>
                         <span style="flex:1;font-weight:500;">${q}</span>
-                        <input type="text" placeholder="Ответ..." class="input-field" style="flex:1;min-width:120px;" data-question="${q}" ${isAnswered ? 'disabled' : ''}>
-                        <button class="btn-outline" style="white-space:nowrap;padding:8px 16px;" onclick="submitAnswer(this)" ${isAnswered ? 'disabled' : ''}>➤</button>
+                        <input type="text" placeholder="Ответ..." class="input-field" style="flex:1;min-width:100px;" data-question="${q}" ${isAnswered ? 'disabled' : ''}>
+                        <button class="btn-outline" style="white-space:nowrap;padding:4px 12px;font-size:0.85rem;" onclick="submitAnswer(this)" ${isAnswered ? 'disabled' : ''}>➤</button>
                     </div>
-                    <div class="quick-values">
-                        ${getQuickValues(q)}
-                    </div>
+                    <div class="quick-values">${getQuickValues(q)}</div>
                 </div>
             `;
         }
@@ -867,17 +820,46 @@ function displayResults(data) {
             </div>
         `;
     }
-    
     container.querySelector('#analysisResult').innerHTML = html;
 }
-
-function toggleProtocol(id) {
-    const el = document.getElementById(`protocol-${id}`);
+function toggleDiagnosisDetails(id) {
+    const el = document.getElementById(`details-${id}`);
     if (el) {
-        el.style.display = el.style.display === 'none' ? 'block' : 'none';
+        el.classList.toggle('open');
+        document.querySelectorAll('.diagnosis-details.open').forEach(d => {
+            if (d.id !== `details-${id}`) d.classList.remove('open');
+        });
     }
 }
-
+async function recalcDiagnosis(diagId, symptom, add) {
+    if (!currentPatient) return;
+    if (add) {
+        currentPatient.complaints.push(symptom);
+    } else {
+        currentPatient.complaints = currentPatient.complaints.filter(s => s !== symptom);
+    }
+    try {
+        const r = await fetch('/api/add_data', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+            body: JSON.stringify({
+                text: currentText,
+                question: 'Изменение симптомов',
+                answer: symptom,
+                patient: currentPatient
+            })
+        });
+        if (r.ok) {
+            const data = await r.json();
+            currentPatient = data.patient;
+            currentAnalysis = data.analysis;
+            displayResults({ patient: currentPatient, analysis: currentAnalysis, raw_text: currentText, extracted_fields: [] });
+            showToast('Диагнозы пересчитаны', 'success');
+        }
+    } catch (e) {
+        console.error('Ошибка пересчёта:', e);
+    }
+}
 function getQuickValues(q) {
     const ql = q.toLowerCase();
     if (ql.includes('температур') || ql.includes('t')) {
@@ -906,21 +888,29 @@ function getQuickValues(q) {
                 <button onclick="setQuickValue(this,'7.8')">7.8</button>
                 <button onclick="setQuickValue(this,'10')">10</button>`;
     }
+    if (ql.includes('часы') || ql.includes('минут') || ql.includes('время')) {
+        return `<button onclick="setQuickValue(this,'1')">1 ч</button>
+                <button onclick="setQuickValue(this,'2')">2 ч</button>
+                <button onclick="setQuickValue(this,'3')">3 ч</button>
+                <button onclick="setQuickValue(this,'6')">6 ч</button>
+                <button onclick="setQuickValue(this,'12')">12 ч</button>`;
+    }
+    if (ql.includes('боль') || ql.includes('характер')) {
+        return `<button onclick="setQuickValue(this,'Давящая')">Давящая</button>
+                <button onclick="setQuickValue(this,'Колющая')">Колющая</button>
+                <button onclick="setQuickValue(this,'Жгучая')">Жгучая</button>
+                <button onclick="setQuickValue(this,'Тупая')">Тупая</button>`;
+    }
     return `<button onclick="setQuickValue(this,'Да')">Да</button>
             <button onclick="setQuickValue(this,'Нет')">Нет</button>
             <button onclick="setQuickValue(this,'Не знаю')">Не знаю</button>`;
 }
-
 function setQuickValue(btn, value) {
     const item = btn.closest('.question-item');
     if (!item) return;
     const input = item.querySelector('input');
-    if (input) {
-        input.value = value;
-        input.dispatchEvent(new Event('input'));
-    }
+    if (input) { input.value = value; input.dispatchEvent(new Event('input')); }
 }
-
 async function submitAnswer(btn) {
     const item = btn.closest('.question-item');
     if (!item) return;
@@ -928,10 +918,8 @@ async function submitAnswer(btn) {
     const question = input.dataset.question;
     const answer = input.value.trim();
     if (!answer) { showToast('Введите ответ', 'error'); return; }
-    
     btn.disabled = true;
     btn.textContent = '⏳...';
-    
     try {
         const r = await fetch('/api/add_data', {
             method: 'POST',
@@ -947,12 +935,10 @@ async function submitAnswer(btn) {
         const data = await r.json();
         currentPatient = data.patient;
         currentAnalysis = data.analysis;
-        
         item.classList.add('answered');
         const answered = JSON.parse(localStorage.getItem('answeredQuestions') || '[]');
         answered.push(question);
         localStorage.setItem('answeredQuestions', JSON.stringify(answered));
-        
         displayResults({ patient: currentPatient, analysis: currentAnalysis, raw_text: currentText, extracted_fields: [] });
         showToast('Ответ принят', 'success');
     } catch (e) {
@@ -962,7 +948,6 @@ async function submitAnswer(btn) {
         btn.textContent = '➤';
     }
 }
-
 async function sendAllAnswers() {
     const items = document.querySelectorAll('.question-item:not(.answered)');
     let sent = 0;
@@ -980,16 +965,11 @@ async function sendAllAnswers() {
         showToast(`Отправлено ${sent} ответов`, 'success');
     }
 }
-
 function clearAnswers() {
     document.querySelectorAll('.question-item input').forEach(inp => inp.value = '');
     localStorage.removeItem('answeredQuestions');
     showToast('Ответы очищены', 'info');
 }
-
-// ============================================================
-//  ИСТОРИЯ
-// ============================================================
 async function loadHistory() {
     const container = document.getElementById('historyList');
     if (!container) return;
@@ -1012,13 +992,11 @@ async function loadHistory() {
         container.innerHTML = `<p style="color:red;">Ошибка: ${e.message}</p>`;
     }
 }
-
 async function viewHistory(callId) {
     const modal = document.getElementById('historyViewModal');
     const body = document.getElementById('historyViewBody');
     modal.classList.add('open');
     body.innerHTML = '<p style="color:var(--text-secondary);">Загрузка...</p>';
-    
     try {
         const r = await fetch(`/history/${callId}`, { headers: { 'Authorization': `Bearer ${token}` } });
         if (!r.ok) throw new Error('Ошибка загрузки');
@@ -1031,8 +1009,8 @@ async function viewHistory(callId) {
                 <div style="grid-column:span 2;"><strong>Адрес:</strong> ${data.address || '—'}</div>
                 <div style="grid-column:span 2;"><strong>Диагноз:</strong> ${data.diagnosis || '—'}</div>
             </div>
-            <div class="card" style="background:var(--primary-light);"><strong>Жалобы:</strong> ${data.complaints?.join('; ') || '—'}</div>
-            <div class="card" style="background:var(--primary-light);"><strong>Анамнез:</strong> ${data.anamnesis || '—'}</div>
+            <div class="card" style="background:#e8f0fe;"><strong>Жалобы:</strong> ${data.complaints?.join('; ') || '—'}</div>
+            <div class="card" style="background:#e8f0fe;"><strong>Анамнез:</strong> ${data.anamnesis || '—'}</div>
             ${data.protocol ? `<div class="card"><strong>Протокол:</strong><div style="white-space:pre-line;">${data.protocol}</div></div>` : ''}
             <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px;">
                 ${data.has_ecg ? '<span>❤️ ЭКГ</span>' : ''}
@@ -1046,10 +1024,6 @@ async function viewHistory(callId) {
         body.innerHTML = `<p style="color:red;">Ошибка: ${e.message}</p>`;
     }
 }
-
-// ============================================================
-//  ПОЛЬЗОВАТЕЛИ (ТОЛЬКО ADMIN)
-// ============================================================
 async function loadUsers() {
     const container = document.getElementById('usersList');
     if (!container) return;
@@ -1077,7 +1051,6 @@ async function loadUsers() {
         container.innerHTML = `<p style="color:red;">Ошибка: ${e.message}</p>`;
     }
 }
-
 async function changeRole(username, newRole) {
     try {
         const r = await fetch(`/auth/users/${username}/role?new_role=${newRole}`, {
@@ -1087,15 +1060,11 @@ async function changeRole(username, newRole) {
         if (!r.ok) throw new Error('Ошибка обновления роли');
         showToast(`Роль пользователя ${username} изменена на ${newRole}`, 'success');
         loadUsers();
-        setupRoles();
+        setupRoles(user?.role || 'user');
     } catch (e) {
         showToast('Ошибка: ' + e.message, 'error');
     }
 }
-
-// ============================================================
-//  ШАБЛОНЫ
-// ============================================================
 async function loadTemplates() {
     const container = document.getElementById('templatesList');
     if (!container) return;
@@ -1105,7 +1074,10 @@ async function loadTemplates() {
         if (!r.ok) throw new Error('Ошибка загрузки');
         const data = await r.json();
         const templates = data.templates || [];
-        if (!templates.length) { container.innerHTML = '<p style="color:var(--text-secondary);">Нет шаблонов</p>'; return; }
+        if (!templates.length) {
+            container.innerHTML = '<p style="color:var(--text-secondary);">Нет шаблонов. Добавьте первый!</p>';
+            return;
+        }
         const isAdmin = user?.role === 'admin';
         container.innerHTML = templates.map(t => `
             <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;padding:10px;border-bottom:1px solid var(--border-color);">
@@ -1126,7 +1098,6 @@ async function loadTemplates() {
         container.innerHTML = `<p style="color:red;">Ошибка: ${e.message}</p>`;
     }
 }
-
 async function addTemplateManually() {
     const mkb = document.getElementById('templateMkb').value.trim();
     const diagnosis = document.getElementById('templateDiagnosis').value.trim();
@@ -1134,12 +1105,10 @@ async function addTemplateManually() {
     const anamnesis = document.getElementById('templateAnamnesis').value.trim();
     const protocol = document.getElementById('templateProtocol').value.trim();
     const severity = document.getElementById('templateSeverity').value;
-    
     if (!diagnosis || !complaints.length) {
         showToast('Заполните диагноз и жалобы', 'error');
         return;
     }
-    
     try {
         const r = await fetch('/templates/manual', {
             method: 'POST',
@@ -1158,7 +1127,6 @@ async function addTemplateManually() {
         showToast('Ошибка: ' + e.message, 'error');
     }
 }
-
 async function deleteTemplate(id) {
     if (!confirm('Удалить шаблон?')) return;
     try {
@@ -1173,48 +1141,22 @@ async function deleteTemplate(id) {
         showToast('Ошибка: ' + e.message, 'error');
     }
 }
-
-// ============================================================
-//  ИГРА
-// ============================================================
 async function loadGameCases() {
     try {
         const r = await fetch('/game/cases', { headers: { 'Authorization': `Bearer ${token}` } });
         if (!r.ok) throw new Error('Ошибка загрузки кейсов');
         const data = await r.json();
         gameCases = data.cases || [];
-        if (gameCases.length === 0) {
-            // Добавляем дефолтные кейсы, если нет
-            await addDefaultCases();
-        }
+        if (gameCases.length === 0) await addDefaultCases();
     } catch (e) {
         console.error('Ошибка загрузки кейсов:', e);
     }
 }
-
 async function addDefaultCases() {
     const defaults = [
-        {
-            title: 'Острый коронарный синдром',
-            description: 'Мужчина 64 года. Внезапная давящая боль за грудиной, иррадиация в левую руку. Холодный пот. АД 180/90, ЧСС 110.',
-            options: ['Острый коронарный синдром', 'Гипертонический криз', 'Пневмония', 'Межрёберная невралгия'],
-            correct: 0,
-            protocol: '1. ЭКГ в 10 минут\n2. Аспирин 300 мг\n3. Нитроглицерин\n4. Морфин\n5. Транспортировка в стационар с ЧКВ'
-        },
-        {
-            title: 'Инсульт',
-            description: 'Женщина 55 лет. Внезапная слабость в правой руке и ноге, нарушение речи, опущение правого угла рта. АД 210/110, ЧСС 85.',
-            options: ['Инсульт', 'Гипертонический криз', 'Мигрень', 'Эпилепсия'],
-            correct: 0,
-            protocol: '1. Шкала FAST\n2. Мониторинг АД\n3. Глюкометрия\n4. Транспортировка в сосудистый центр'
-        },
-        {
-            title: 'Анафилактический шок',
-            description: 'Мужчина 30 лет. После укуса пчелы появилась сыпь, отёк лица, затруднение дыхания. АД 80/50, ЧСС 130.',
-            options: ['Анафилактический шок', 'Отёк Квинке', 'Бронхиальная астма', 'Паническая атака'],
-            correct: 0,
-            protocol: '1. Адреналин 0.3-0.5 мл в/м\n2. Инфузионная терапия\n3. Преднизолон 90-120 мг в/в\n4. Антигистаминные'
-        }
+        { title: 'Острый коронарный синдром', description: 'Мужчина 64 года. Внезапная давящая боль за грудиной, иррадиация в левую руку. Холодный пот. АД 180/90, ЧСС 110.', options: ['Острый коронарный синдром', 'Гипертонический криз', 'Пневмония', 'Межрёберная невралгия'], correct: 0, protocol: '1. ЭКГ в 10 минут\n2. Аспирин 300 мг\n3. Нитроглицерин\n4. Морфин\n5. Транспортировка в стационар с ЧКВ' },
+        { title: 'Инсульт', description: 'Женщина 55 лет. Внезапная слабость в правой руке и ноге, нарушение речи, опущение правого угла рта. АД 210/110, ЧСС 85.', options: ['Инсульт', 'Гипертонический криз', 'Мигрень', 'Эпилепсия'], correct: 0, protocol: '1. Шкала FAST\n2. Мониторинг АД\n3. Глюкометрия\n4. Транспортировка в сосудистый центр' },
+        { title: 'Анафилактический шок', description: 'Мужчина 30 лет. После укуса пчелы появилась сыпь, отёк лица, затруднение дыхания. АД 80/50, ЧСС 130.', options: ['Анафилактический шок', 'Отёк Квинке', 'Бронхиальная астма', 'Паническая атака'], correct: 0, protocol: '1. Адреналин 0.3-0.5 мл в/м\n2. Инфузионная терапия\n3. Преднизолон 90-120 мг в/в\n4. Антигистаминные' }
     ];
     for (const c of defaults) {
         try {
@@ -1223,13 +1165,10 @@ async function addDefaultCases() {
                 headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
                 body: JSON.stringify(c)
             });
-        } catch (e) {
-            console.error('Ошибка добавления дефолтного кейса:', e);
-        }
+        } catch (e) { console.error('Ошибка добавления дефолтного кейса:', e); }
     }
     await loadGameCases();
 }
-
 function setGameMode(mode) {
     currentGameMode = mode;
     document.querySelectorAll('.mode-selector button').forEach(el => {
@@ -1237,7 +1176,6 @@ function setGameMode(mode) {
     });
     newGameCase();
 }
-
 function newGameCase() {
     const filtered = gameCases.filter(c => c.mode === currentGameMode || !c.mode);
     if (!filtered.length) {
@@ -1249,55 +1187,39 @@ function newGameCase() {
     const idx = Math.floor(Math.random() * filtered.length);
     currentGameCase = filtered[idx];
     gameAnswered = false;
-    
     document.getElementById('gameQuestion').innerHTML = `
         <div style="font-weight:600;margin-bottom:4px;">${currentGameCase.title}</div>
         <p>${currentGameCase.description}</p>
         ${currentGameMode === 'emergency' ? '<div style="color:red;font-weight:600;margin-top:4px;">⏱️ 30 секунд на ответ!</div>' : ''}
     `;
-    
     document.getElementById('gameOptions').innerHTML = currentGameCase.options.map((opt, i) => `
         <button class="btn-outline" onclick="checkGameAnswer(${i})" style="text-align:left;justify-content:flex-start;">
             ${String.fromCharCode(65 + i)}. ${opt}
         </button>
     `).join('');
-    
     document.getElementById('gameResult').classList.add('hidden');
 }
-
 function checkGameAnswer(selected) {
     if (gameAnswered) return;
     gameAnswered = true;
     const isCorrect = selected === currentGameCase.correct;
     const resultDiv = document.getElementById('gameResult');
-    
     if (isCorrect) {
         gameScore++;
         document.getElementById('gameScore').textContent = gameScore;
         resultDiv.className = 'card';
         resultDiv.style.border = '2px solid #16a34a';
         resultDiv.style.background = '#f0fdf4';
-        resultDiv.innerHTML = `
-            <div style="color:#16a34a;font-weight:700;">✅ Правильно!</div>
-            <div style="margin-top:8px;"><strong>Протокол:</strong></div>
-            <div style="white-space:pre-line;">${currentGameCase.protocol}</div>
-        `;
+        resultDiv.innerHTML = `<div style="color:#16a34a;font-weight:700;">✅ Правильно!</div><div style="margin-top:8px;"><strong>Протокол:</strong></div><div style="white-space:pre-line;">${currentGameCase.protocol}</div>`;
     } else {
         resultDiv.className = 'card';
         resultDiv.style.border = '2px solid #dc2626';
         resultDiv.style.background = '#fef2f2';
-        resultDiv.innerHTML = `
-            <div style="color:#dc2626;font-weight:700;">❌ Неправильно. Правильный ответ: ${currentGameCase.options[currentGameCase.correct]}</div>
-            <div style="margin-top:8px;"><strong>Протокол:</strong></div>
-            <div style="white-space:pre-line;">${currentGameCase.protocol}</div>
-        `;
+        resultDiv.innerHTML = `<div style="color:#dc2626;font-weight:700;">❌ Неправильно. Правильный ответ: ${currentGameCase.options[currentGameCase.correct]}</div><div style="margin-top:8px;"><strong>Протокол:</strong></div><div style="white-space:pre-line;">${currentGameCase.protocol}</div>`;
     }
     resultDiv.classList.remove('hidden');
-    
-    // Блокируем кнопки
     document.querySelectorAll('#gameOptions button').forEach(btn => btn.disabled = true);
 }
-
 async function addGameCase() {
     const title = document.getElementById('gameTitle').value.trim();
     const description = document.getElementById('gameDescription').value.trim();
@@ -1309,12 +1231,10 @@ async function addGameCase() {
     ];
     const correct = parseInt(document.getElementById('gameCorrect').value);
     const protocol = document.getElementById('gameProtocol').value.trim();
-    
     if (!title || !description || options.some(o => !o) || !protocol) {
         showToast('Заполните все поля', 'error');
         return;
     }
-    
     try {
         const r = await fetch('/game/cases', {
             method: 'POST',
@@ -1336,13 +1256,8 @@ async function addGameCase() {
         showToast('Ошибка: ' + e.message, 'error');
     }
 }
-
-// ============================================================
-//  ДОКУМЕНТЫ
-// ============================================================
 let cameraType = null;
 let cameraStream = null;
-
 async function captureDocument(type) {
     cameraType = type;
     document.getElementById('cameraTitle').textContent = `📷 Сканирование: ${type}`;
@@ -1355,7 +1270,6 @@ async function captureDocument(type) {
         closeCamera();
     }
 }
-
 function closeCamera() {
     if (cameraStream) {
         cameraStream.getTracks().forEach(t => t.stop());
@@ -1363,7 +1277,6 @@ function closeCamera() {
     }
     document.getElementById('cameraModal').classList.remove('open');
 }
-
 function capturePhoto() {
     const video = document.getElementById('cameraVideo');
     const canvas = document.getElementById('cameraCanvas');
@@ -1374,7 +1287,6 @@ function capturePhoto() {
     closeCamera();
     processDocumentImage(dataUrl, cameraType);
 }
-
 function processDocumentFile(event, type) {
     const file = event.target.files[0];
     if (!file) return;
@@ -1383,7 +1295,6 @@ function processDocumentFile(event, type) {
     reader.readAsDataURL(file);
     event.target.value = '';
 }
-
 function processDocumentImage(dataUrl, type) {
     const maxImages = type === 'ecg' ? 4 : 1;
     if (documentData[type].images.length >= maxImages) {
@@ -1394,26 +1305,20 @@ function processDocumentImage(dataUrl, type) {
     renderDocumentPreview(type);
     showToast('Фото добавлено', 'success');
 }
-
 function renderDocumentPreview(type) {
     const container = document.getElementById(`${type}Preview`);
     if (!container) return;
     container.innerHTML = documentData[type].images.map((img, i) => `
         <div style="position:relative;display:inline-block;">
-            <img src="${img}" style="width:60px;height:60px;object-fit:cover;border-radius:8px;border:1px solid var(--border-color);">
-            <button onclick="removeDocumentImage('${type}', ${i})" style="position:absolute;top:-6px;right:-6px;background:#dc2626;color:white;border:none;border-radius:50%;width:20px;height:20px;font-size:12px;cursor:pointer;">✕</button>
+            <img src="${img}" style="width:50px;height:50px;object-fit:cover;border-radius:6px;border:1px solid #d1d9e6;">
+            <button onclick="removeDocumentImage('${type}', ${i})" style="position:absolute;top:-6px;right:-6px;background:#dc2626;color:white;border:none;border-radius:50%;width:18px;height:18px;font-size:10px;cursor:pointer;">✕</button>
         </div>
     `).join('');
 }
-
 function removeDocumentImage(type, index) {
     documentData[type].images.splice(index, 1);
     renderDocumentPreview(type);
 }
-
-// ============================================================
-//  СОХРАНЕНИЕ ВЫЗОВА
-// ============================================================
 async function saveCall() {
     if (!currentPatient || !currentAnalysis) {
         showToast('Сначала проведите анализ', 'error');
@@ -1422,11 +1327,9 @@ async function saveCall() {
     const fio = document.getElementById('patientFio').value.trim() || 'Не указано';
     const birth = document.getElementById('patientBirth').value.trim();
     const address = document.getElementById('patientAddress').value.trim();
-    
     const btn = document.querySelector('#resultContainer .btn-primary');
     btn.disabled = true;
     btn.textContent = '⏳ Сохранение...';
-    
     try {
         const finalDiagnosis = currentAnalysis.possible_diagnoses?.[0]?.name || null;
         const payload = {
@@ -1456,38 +1359,13 @@ async function saveCall() {
         btn.textContent = '💾 Сохранить вызов';
     }
 }
-
-// ============================================================
-//  УВЕЛИЧЕНИЕ ДЛЯ СЛАБОВИДЯЩИХ
-// ============================================================
-function toggleScale() {
-    currentScale = currentScale % 3 + 1;
-    document.body.className = `scale-${currentScale}`;
-    document.getElementById('scaleLabel').textContent = currentScale + 'x';
-    localStorage.setItem('scale', currentScale);
-}
-
-// ============================================================
-//  ТЕМЫ (светлая/тёмная)
-// ============================================================
-function toggleTheme() {
-    const isDark = document.body.style.background === '#1a202c';
-    document.body.style.background = isDark ? 'var(--bg-body)' : '#1a202c';
-    document.body.style.color = isDark ? 'var(--text-primary)' : '#e2e8f0';
-    // Простая смена — можно расширить
-    showToast(isDark ? 'Светлая тема' : 'Тёмная тема', 'info');
-}
-
-// ============================================================
-//  TOAST
-// ============================================================
 function showToast(msg, type = 'info') {
     const colors = { success: '#16a34a', error: '#dc2626', info: '#0c4a6e' };
     const toast = document.createElement('div');
     toast.style.cssText = `
-        position:fixed;bottom:20px;left:50%;transform:translateX(-50%);
-        background:${colors[type]};color:white;padding:12px 24px;
-        border-radius:12px;font-weight:500;z-index:9999;
+        position:fixed;bottom:80px;left:50%;transform:translateX(-50%);
+        background:${colors[type]};color:white;padding:10px 20px;
+        border-radius:10px;font-weight:500;z-index:9999;
         box-shadow:0 4px 12px rgba(0,0,0,0.2);max-width:90%;text-align:center;
         animation:fadeIn 0.3s ease;
     `;
@@ -1499,39 +1377,27 @@ function showToast(msg, type = 'info') {
         setTimeout(() => toast.remove(), 300);
     }, 3000);
 }
-
-// ============================================================
-//  ВХОД ПО НОМЕРУ / ЛОГИНУ
-// ============================================================
 document.addEventListener('DOMContentLoaded', function() {
     const phoneBtn = document.getElementById('loginTypePhone');
     const userBtn = document.getElementById('loginTypeUsername');
     const input = document.getElementById('loginInput');
-    
     phoneBtn.addEventListener('click', function() {
         input.placeholder = 'Номер телефона (+7...)';
-        phoneBtn.style.background = 'var(--primary)';
+        phoneBtn.style.background = '#0c4a6e';
         phoneBtn.style.color = 'white';
         userBtn.style.background = 'transparent';
-        userBtn.style.color = 'var(--primary)';
+        userBtn.style.color = '#0c4a6e';
     });
-    
     userBtn.addEventListener('click', function() {
         input.placeholder = 'Имя пользователя (логин)';
-        userBtn.style.background = 'var(--primary)';
+        userBtn.style.background = '#0c4a6e';
         userBtn.style.color = 'white';
         phoneBtn.style.background = 'transparent';
-        phoneBtn.style.color = 'var(--primary)';
+        phoneBtn.style.color = '#0c4a6e';
     });
-    
-    // Восстанавливаем масштаб
-    document.body.className = `scale-${currentScale}`;
+    document.body.className = 'scale-' + currentScale;
     document.getElementById('scaleLabel').textContent = currentScale + 'x';
 });
-
-// ============================================================
-//  ЗАПУСК
-// ============================================================
 if (token && user) enterApp();
 console.log('🚑 Assistant SMP v2.0 загружен!');
 </script>
