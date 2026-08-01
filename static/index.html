@@ -30,7 +30,6 @@
         body.scale-1 { --font-base: 16px; }
         body.scale-2 { --font-base: 24px; }
         body.scale-3 { --font-base: 32px; }
-        /* Тёмная тема (если включена) */
         body.dark-mode {
             --bg-body: #1a202c;
             --bg-card: #2d3748;
@@ -392,10 +391,13 @@
     <div id="appPage" class="hidden">
         <div class="header">
             <div class="logo" onclick="goHome()"><span>🚑</span> Assistant SMP</div>
-            <div class="header-actions">
-                <button onclick="toggleScale()" title="Увеличение для слабовидящих">🕶️ <span id="scaleLabel">1x</span></button>
-                <button onclick="toggleTheme()" title="Сменить тему">🌓</button>
-                <button onclick="logout()" title="Выйти">🚪</button>
+            <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
+                <span id="userName" style="color:white;font-size:0.9rem;font-weight:500;"></span>
+                <div class="header-actions">
+                    <button onclick="toggleScale()" title="Увеличение для слабовидящих">🕶️ <span id="scaleLabel">1x</span></button>
+                    <button onclick="toggleTheme()" title="Сменить тему">🌓</button>
+                    <button onclick="logout()" title="Выйти">🚪</button>
+                </div>
             </div>
         </div>
         <div class="tabs" id="tabsContainer">
@@ -668,8 +670,10 @@ function enterApp() {
     document.getElementById('authPage').classList.add('hidden');
     document.getElementById('appPage').classList.remove('hidden');
     user = JSON.parse(localStorage.getItem('user') || 'null');
-    document.getElementById('userName').textContent = user?.username || '—';
-    // Принудительно показываем админские вкладки, если роль admin
+    const userNameEl = document.getElementById('userName');
+    if (userNameEl) {
+        userNameEl.textContent = user?.username || '—';
+    }
     const role = user?.role || 'user';
     setupRoles(role);
     loadTemplates();

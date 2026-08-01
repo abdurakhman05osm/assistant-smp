@@ -35,7 +35,6 @@ class ManualTemplateResponse(BaseModel):
     complaints_count: int
     message: str
 
-# ===== ЗАГРУЗКА ИЗ ФАЙЛА =====
 @router.post("/upload")
 async def upload_template(
     file: UploadFile = File(...),
@@ -76,7 +75,6 @@ async def upload_template(
         "message": "Template uploaded successfully"
     }
 
-# ===== РУЧНОЕ ДОБАВЛЕНИЕ =====
 @router.post("/manual", response_model=ManualTemplateResponse)
 async def add_template_manual(
     request: ManualTemplateRequest,
@@ -117,10 +115,8 @@ async def add_template_manual(
         message="Template added successfully"
     )
 
-# ===== СПИСОК ВСЕХ ШАБЛОНОВ (ВИДИТ АДМИН) =====
 @router.get("/list")
 async def list_templates(current_user = Depends(get_current_user)):
-    """Возвращает все загруженные шаблоны (все 59)."""
     templates = []
     for template in _loaded_templates.values():
         templates.append({
@@ -134,7 +130,6 @@ async def list_templates(current_user = Depends(get_current_user)):
         })
     return {"templates": templates}
 
-# ===== ПОЛУЧЕНИЕ ОДНОГО ШАБЛОНА =====
 @router.get("/{template_id}")
 async def get_template(template_id: str, current_user = Depends(get_current_user)):
     template = _loaded_templates.get(template_id)
@@ -142,7 +137,6 @@ async def get_template(template_id: str, current_user = Depends(get_current_user
         raise HTTPException(status_code=404, detail="Template not found")
     return template
 
-# ===== РЕДАКТИРОВАНИЕ (ТОЛЬКО АДМИН) =====
 @router.put("/{template_id}")
 async def update_template(
     template_id: str,
@@ -166,7 +160,6 @@ async def update_template(
     
     return {"message": "Template updated successfully"}
 
-# ===== УДАЛЕНИЕ (ТОЛЬКО АДМИН) =====
 @router.delete("/{template_id}")
 async def delete_template(
     template_id: str,
@@ -183,6 +176,5 @@ async def delete_template(
     
     return {"message": "Template deleted successfully"}
 
-# ===== ДЛЯ ДРУГИХ МОДУЛЕЙ =====
 def get_all_templates():
     return list(_loaded_templates.values())
