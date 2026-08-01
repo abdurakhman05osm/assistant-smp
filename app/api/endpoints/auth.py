@@ -14,11 +14,12 @@ pwd_context = CryptContext(schemes=["pbkdf2_sha256"], deprecated="auto")
 # Инициализация БД при первом импорте
 init_db()
 
-def get_user_by_username(username: str):
-    return get_user_by_username(username)
+# Обрати внимание: функция get_user_by_username уже импортирована из database.py
+# Не нужно создавать её заново!
 
 @router.post("/register")
 async def register(user_data: UserCreate):
+    # Используем импортированную функцию из database.py
     if get_user_by_username(user_data.username):
         raise HTTPException(status_code=400, detail="Username already exists")
     
@@ -46,9 +47,9 @@ async def login(user_data: UserLogin):
     expires = datetime.utcnow() + timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
     token = jwt.encode(
         {
-            "sub": user.id,
-            "username": user.username,
-            "role": user.role,
+            "sub": user["id"],
+            "username": user["username"],
+            "role": user["role"],
             "exp": expires
         },
         settings.SECRET_KEY,
@@ -60,10 +61,10 @@ async def login(user_data: UserLogin):
         "token_type": "bearer",
         "expires_in": settings.ACCESS_TOKEN_EXPIRE_MINUTES * 60,
         "user": UserResponse(
-            id=user.id,
-            username=user.username,
-            email=user.email,
-            role=user.role
+            id=user["id"],
+            username=user["username"],
+            email=user["email"],
+            role=user["role"]
         )
     }
 
