@@ -41,7 +41,8 @@ async def login(user_data: UserLogin):
     if not user:
         raise HTTPException(status_code=401, detail="Invalid credentials")
     
-    if not pwd_context.verify(user_data.password, user.hashed_password):
+    # Проверка пароля (используем обращение через ключи, как в словаре)
+    if not pwd_context.verify(user_data.password, user["hashed_password"]):
         raise HTTPException(status_code=401, detail="Invalid credentials")
     
     expires = datetime.utcnow() + timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
