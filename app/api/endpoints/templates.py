@@ -1,6 +1,7 @@
 import os
 import shutil
 import uuid
+import json
 from fastapi import APIRouter, Depends, HTTPException, UploadFile, File
 from typing import List, Optional
 from datetime import datetime
@@ -18,7 +19,11 @@ PARSED_DIR = os.path.join(TEMPLATES_DIR, "parsed")
 os.makedirs(RAW_DIR, exist_ok=True)
 os.makedirs(PARSED_DIR, exist_ok=True)
 
+# Хранилище для шаблонов, добавленных вручную
 _loaded_templates = {}
+
+# Путь к базе знаний
+DISEASES_JSON_PATH = "knowledge_base/diseases.json"
 
 class ManualTemplateRequest(BaseModel):
     mkb: Optional[str] = None
@@ -34,6 +39,17 @@ class ManualTemplateResponse(BaseModel):
     mkb: Optional[str] = None
     complaints_count: int
     message: str
+
+def load_diseases_from_json():
+    """Загружает диагнозы из diseases.json"""
+    if os.path.exists(DISEASES_JSON_PATH):
+        try:
+            with open(DISEASES_JSON_PATH, "r", encoding="utf-8") as f:
+                data = json.load(f)
+                return data.get("diseases", [])
+        except:
+            return []
+    return []
 
 @router.post("/upload")
 async def upload_template(
@@ -117,7 +133,26 @@ async def add_template_manual(
 
 @router.get("/list")
 async def list_templates(current_user = Depends(get_current_user)):
+    """Возвращает все диагнозы из diseases.json + добавленные вручную"""
     templates = []
+    
+    # 1. Добавляем диагнозы из diseases.json
+    diseases = load_diseases_from_json()
+    for disease in diseases:
+        templates.append({
+            "id": disease.get("id", "disease_" + str(uuid.uuid4())[:4]),
+            "source": "diseases.json",
+            "diagnosis": disease.get("name", "Неизвестно"),
+            "mkb": disease.get("icd10", ""),
+            "severity": disease.get("severity", "medium"),
+            "created_at": datetime.now().isoformat(),
+            "complaints_count": len(disease.get("symptoms", [])),
+            "complaints_text": ", ".join(disease.get("symptoms", [])),
+            "anamnesis_text": disease.get("anamnesis", ""),
+            "protocol_text": disease.get("protocol", "")
+        })
+    
+    # 2. Добавляем шаблоны, добавленные вручную
     for template in _loaded_templates.values():
         templates.append({
             "id": template.id,
@@ -126,12 +161,31 @@ async def list_templates(current_user = Depends(get_current_user)):
             "mkb": template.icd10,
             "severity": template.severity,
             "created_at": template.created_at.isoformat(),
-            "complaints_count": len(template.complaints)
+            "complaints_count": len(template.complaints),
+            "complaints_text": ", ".join(template.complaints),
+            "anamnesis_text": template.anamnesis or "",
+            "protocol_text": template.protocol or ""
         })
+    
     return {"templates": templates}
 
 @router.get("/{template_id}")
 async def get_template(template_id: str, current_user = Depends(get_current_user)):
+    # Сначала ищем в diseases.json
+    diseases = load_diseases_from_json()
+    for disease in diseases:
+        if disease.get("id") == template_id:
+            return {
+                "id": template_id,
+                "diagnosis": disease.get("name"),
+                "mkb": disease.get("icd10"),
+                "severity": disease.get("severity"),
+                "complaints": disease.get("symptoms", []),
+                "anamnesis": disease.get("anamnesis", ""),
+                "protocol": disease.get("protocol", "")
+            }
+    
+    # Если не нашли — ищем вручную добавленные
     template = _loaded_templates.get(template_id)
     if not template:
         raise HTTPException(status_code=404, detail="Template not found")
@@ -177,4 +231,5 @@ async def delete_template(
     return {"message": "Template deleted successfully"}
 
 def get_all_templates():
+    """Возвращает все шаблоны для других модулей"""
     return list(_loaded_templates.values())
