@@ -1,6 +1,6 @@
 import re
 from typing import List, Dict, Any, Optional
-from app.core.models.patient import PatientData, VitalSigns
+from app.core.models.patient import PatientData
 from app.core.models.diagnosis import DiagnosisResult
 from app.core.knowledge.disease_kb import kb
 
@@ -19,6 +19,7 @@ class MedicalEngine:
         symptoms = MedicalEngine._extract_symptoms(patient_data)
         
         if symptoms:
+            # Используем kb с поддержкой категорий
             all_diseases = kb.get_all_diseases()
             scored_diseases = []
             
@@ -41,11 +42,9 @@ class MedicalEngine:
             # Фильтруем > 30%
             filtered = [d for d in scored_diseases if d['probability'] > 30]
             
-            # Если есть хотя бы 3 с > 30% — показываем их
             if len(filtered) >= 3:
                 top_diagnoses = filtered[:3]
             else:
-                # Иначе добираем из оставшихся, чтобы было 3
                 top_diagnoses = scored_diseases[:3]
             
             for item in top_diagnoses:
@@ -56,6 +55,9 @@ class MedicalEngine:
                 protocol_text = re.sub(r'\n+', '\n', protocol_text).strip()
                 
                 icd10_code = disease.get('icd10', None)
+                red_flags = disease.get('red_flags', [])
+                questions = disease.get('questions', [])
+                hospitalization = disease.get('hospitalization', False)
                 
                 result['possible_diagnoses'].append(DiagnosisResult(
                     id=disease.get('id', 'unknown'),
@@ -69,7 +71,10 @@ class MedicalEngine:
                     matched_symptom_list=item.get('matched_symptoms_list', []),
                     missing_symptom_list=item.get('missing_symptoms_list', []),
                     unknown_symptom_list=item.get('unknown_symptoms_list', []),
-                    icd10=icd10_code
+                    icd10=icd10_code,
+                    red_flags=red_flags,
+                    questions=questions,
+                    hospitalization=hospitalization
                 ))
         
         result['questions'] = MedicalEngine._generate_intelligent_questions(
@@ -140,6 +145,7 @@ class MedicalEngine:
         else:
             base_prob = 10
         
+        # Учёт возраста
         if patient_data.age:
             risk_factors = disease.get('risk_factors', [])
             if any('возраст' in rf for rf in risk_factors):
@@ -150,11 +156,13 @@ class MedicalEngine:
                 elif patient_data.age < 30:
                     base_prob -= 10
         
+        # Учёт пола
         if patient_data.sex == 'male' and disease.get('id') == 'insult':
             base_prob += 5
         if patient_data.sex == 'female' and disease.get('id') == 'hypertensive_crisis':
             base_prob += 5
         
+        # Учёт витальных
         vitals = patient_data.vitals
         if vitals:
             if disease.get('id') == 'oks' and vitals.bp_sys and vitals.bp_sys > 140:
@@ -164,7 +172,7 @@ class MedicalEngine:
             if disease.get('id') == 'insult' and vitals.spo2 and vitals.spo2 < 90:
                 base_prob += 15
         
-        # Учёт анамнеза (хронические заболевания)
+        # Учёт анамнеза
         if patient_data.medical_history:
             history_lower = patient_data.medical_history.lower()
             disease_id = disease.get('id')
@@ -287,24 +295,15 @@ class MedicalEngine:
         if not vitals or vitals.temperature is None:
             questions.append("Есть ли температура? (в градусах)")
         
+        # Добавляем вопросы из базы знаний
         if diagnoses:
             top = diagnoses[0] if diagnoses else None
-            if top:
-                if top.id == 'oks':
-                    questions.append("Была ли ЭКГ? (есть ли изменения?)")
-                    questions.append("Принимает ли аспирин/нитроглицерин?")
-                elif top.id == 'insult':
-                    questions.append("Когда появились первые симптомы? (часы назад)")
-                    questions.append("Есть ли диабет? (уровень глюкозы)")
-                elif top.id == 'hypertensive_crisis':
-                    questions.append("Принимает ли препараты от давления? (какие, когда?)")
-                    questions.append("Есть ли тошнота или рвота?")
-                elif top.id == 'anaphylaxis':
-                    questions.append("Был ли контакт с аллергеном?")
-                    questions.append("Когда начались симптомы?")
-                elif top.id == 'pneumothorax':
-                    questions.append("Была ли травма груди?")
-                    questions.append("Есть ли одышка в покое?")
+            if top and hasattr(top, 'questions') and top.questions:
+                questions.extend(top.questions[:3])
+            elif top and top.id:
+                disease = kb.get_disease_by_id(top.id)
+                if disease and disease.get('questions'):
+                    questions.extend(disease.get('questions', [])[:3])
         
         if not questions:
             questions = [

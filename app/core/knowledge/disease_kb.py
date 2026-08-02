@@ -1,6 +1,7 @@
 import json
 import os
 from typing import List, Dict, Optional
+from app.core.knowledge.loader import load_all_diseases, load_diseases_by_category, get_all_categories
 
 class KnowledgeBase:
     def __init__(self):
@@ -8,17 +9,16 @@ class KnowledgeBase:
         self._load_data()
     
     def _load_data(self):
-        try:
-            file_path = os.path.join(os.path.dirname(__file__), '..', '..', '..', 'knowledge_base', 'diseases.json')
-            with open(file_path, 'r', encoding='utf-8') as f:
-                data = json.load(f)
-                self.diseases = data.get('diseases', [])
-        except Exception as e:
-            print(f"Ошибка загрузки базы знаний: {e}")
-            self.diseases = []
+        self.diseases = load_all_diseases()
     
     def get_all_diseases(self) -> List[Dict]:
         return self.diseases
+    
+    def get_diseases_by_category(self, category: str) -> List[Dict]:
+        return load_diseases_by_category(category)
+    
+    def get_all_categories(self) -> List[str]:
+        return get_all_categories()
     
     def get_disease_by_id(self, disease_id: str) -> Optional[Dict]:
         for d in self.diseases:
@@ -26,9 +26,15 @@ class KnowledgeBase:
                 return d
         return None
     
-    def search_by_symptoms(self, symptoms: List[str]) -> List[Dict]:
+    def search_by_symptoms(self, symptoms: List[str], category: Optional[str] = None) -> List[Dict]:
+        """Поиск по симптомам с возможностью фильтрации по категории"""
+        if category:
+            diseases = load_diseases_by_category(category)
+        else:
+            diseases = self.diseases
+            
         results = []
-        for disease in self.diseases:
+        for disease in diseases:
             disease_symptoms = disease.get('symptoms', [])
             matches = 0
             for symptom in symptoms:
