@@ -1,1 +1,1 @@
-from . import auth, templates, process, history, game
+from . import auth, templates, process, history
