@@ -360,21 +360,24 @@
         .footer .contact-btn {
             background: var(--primary);
             color: white;
-            padding: 8px 20px;
-            border-radius: 8px;
+            padding: 4px 12px;
+            border-radius: 6px;
             border: none;
-            font-weight: 600;
+            font-weight: 500;
             cursor: pointer;
             transition: background 0.2s;
+            font-size: 0.85rem;
+            display: inline-block;
         }
         .footer .contact-btn:hover {
             background: var(--primary-dark);
         }
         .footer .contact-details {
             display: none;
-            margin-top: 10px;
-            padding-top: 10px;
+            margin-top: 8px;
+            padding-top: 8px;
             border-top: 1px solid var(--border-color);
+            font-size: 0.85rem;
         }
         .footer .contact-details.open { display: block; }
         .footer .contact-details a {
@@ -566,7 +569,7 @@
             <button class="tab" data-tab="documents" onclick="switchTab('documents')">📄 Документы</button>
             <button class="tab" data-tab="history" onclick="switchTab('history')">📋 История</button>
             <button class="tab tab-game" data-tab="game" onclick="switchTab('game')">🎮 Игра</button>
-            <button class="tab tab-templates" data-tab="templates" onclick="switchTab('templates')" style="display:none;">📂 Шаблоны</button>
+            <button class="tab tab-templates" data-tab="templates" onclick="switchTab('templates')" style="display:'';">📂 Шаблоны</button>
             <button class="tab tab-users" data-tab="users" onclick="switchTab('users')" style="display:none;">👥 Пользователи</button>
         </div>
 
@@ -627,8 +630,7 @@
                 </div>
             </div>
         </div>
-
-        <!-- ИСТОРИЯ -->
+                <!-- ИСТОРИЯ -->
         <div id="tab-history" class="tab-content">
             <div class="card">
                 <h2 style="font-weight:700;margin-bottom:12px;">📋 История вызовов</h2>
@@ -636,7 +638,7 @@
             </div>
         </div>
 
-        <!-- ===== НОВАЯ ИГРА ===== -->
+        <!-- ===== ИГРА (НОВАЯ ВЕРСИЯ) ===== -->
         <div id="tab-game" class="tab-content">
             <div class="card">
                 <h2 style="font-weight:700;margin-bottom:12px;">🎮 Клинические кейсы</h2>
@@ -704,27 +706,32 @@
                 <h2 style="font-weight:700;margin-bottom:12px;">📂 Шаблоны (диагнозы, жалобы, анамнезы)</h2>
                 
                 <!-- ПОЛЕ ПОИСКА И КАТЕГОРИИ -->
-                <div style="display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap;">
+                <div style="display:flex;gap:10px;margin-bottom:12px;flex-wrap:wrap;">
                     <select id="categorySelect" class="input-field" style="flex:2;min-width:150px;" onchange="loadTemplates()">
                         <option value="">Все категории</option>
                     </select>
                     <input type="text" id="templateSearch" class="input-field" style="flex:3;min-width:200px;" placeholder="🔍 Поиск по диагнозу, МКБ, жалобам..." oninput="filterTemplates()">
                 </div>
 
-                <!-- ФОРМА ДОБАВЛЕНИЯ (видна только admin и moderator) -->
-                <div id="addTemplateForm" style="display:grid;gap:10px;margin-bottom:16px;padding:16px;background:var(--bg-body);border-radius:var(--radius);">
-                    <input type="text" id="templateMkb" placeholder="МКБ-10" class="input-field">
-                    <input type="text" id="templateDiagnosis" placeholder="Диагноз" class="input-field">
-                    <textarea id="templateComplaints" rows="2" placeholder="Жалобы (каждая с новой строки)" class="input-field"></textarea>
-                    <textarea id="templateAnamnesis" rows="2" placeholder="Анамнез" class="input-field"></textarea>
-                    <textarea id="templateProtocol" rows="3" placeholder="Протокол" class="input-field"></textarea>
-                    <select id="templateSeverity" class="input-field">
-                        <option value="critical">Критическое</option>
-                        <option value="high">Высокий риск</option>
-                        <option value="medium" selected>Средний риск</option>
-                        <option value="low">Низкий риск</option>
-                    </select>
-                    <button class="btn-success" onclick="addTemplateManually()" style="width:100%;">✅ Добавить шаблон</button>
+                <!-- КОМПАКТНАЯ КНОПКА ДОБАВЛЕНИЯ (только для модераторов/админов) -->
+                <div style="margin-bottom:12px;">
+                    <button id="showAddTemplateBtn" class="btn-outline" style="padding:4px 12px;font-size:0.85rem;width:auto;display:none;" onclick="toggleAddTemplateForm()">➕ Добавить шаблон</button>
+                    <div id="addTemplateForm" style="display:none;margin-top:8px;padding:12px;background:var(--bg-body);border-radius:var(--radius);border:1px solid var(--border-color);">
+                        <div style="display:grid;gap:8px;">
+                            <input type="text" id="templateMkb" placeholder="МКБ-10" class="input-field" style="min-height:36px;padding:6px 12px;">
+                            <input type="text" id="templateDiagnosis" placeholder="Диагноз" class="input-field" style="min-height:36px;padding:6px 12px;">
+                            <textarea id="templateComplaints" rows="2" placeholder="Жалобы (каждая с новой строки)" class="input-field" style="min-height:60px;padding:6px 12px;"></textarea>
+                            <textarea id="templateAnamnesis" rows="2" placeholder="Анамнез" class="input-field" style="min-height:60px;padding:6px 12px;"></textarea>
+                            <textarea id="templateProtocol" rows="3" placeholder="Протокол" class="input-field" style="min-height:80px;padding:6px 12px;"></textarea>
+                            <select id="templateSeverity" class="input-field" style="min-height:36px;padding:6px 12px;">
+                                <option value="critical">Критическое</option>
+                                <option value="high">Высокий риск</option>
+                                <option value="medium" selected>Средний риск</option>
+                                <option value="low">Низкий риск</option>
+                            </select>
+                            <button class="btn-success" onclick="addTemplateManually()" style="padding:6px 12px;font-size:0.9rem;">✅ Добавить шаблон</button>
+                        </div>
+                    </div>
                 </div>
 
                 <!-- СПИСОК ШАБЛОНОВ -->
@@ -802,7 +809,6 @@ let currentAnalysis = null;
 let currentText = '';
 let allTemplatesData = [];
 let gameScore = parseInt(localStorage.getItem('gameScore') || '0');
-let gameLevel = 0;
 let currentGameCase = null;
 let gameAnswered = false;
 let currentGameMode = 'diagnostic';
@@ -955,12 +961,21 @@ function enterApp() {
 function setupRoles(role) {
     const isAdmin = role === 'admin';
     const isModerator = role === 'moderator' || isAdmin;
+    
+    // Вкладка "Шаблоны" видна всем
     document.querySelectorAll('.tab-templates').forEach(el => {
-        el.style.display = isModerator ? '' : 'none';
+        el.style.display = ''; // показываем всем
     });
+    // Вкладка "Пользователи" только для admin
     document.querySelectorAll('.tab-users').forEach(el => {
         el.style.display = isAdmin ? '' : 'none';
     });
+    // Кнопка добавления шаблонов — только для модераторов/админов
+    const addBtn = document.getElementById('showAddTemplateBtn');
+    if (addBtn) {
+        addBtn.style.display = isModerator ? 'inline-block' : 'none';
+    }
+    // Форма добавления кейсов — только для модераторов/админов
     document.getElementById('addGameCaseForm').classList.toggle('hidden', !isModerator);
 }
 
@@ -973,7 +988,6 @@ function switchTab(tab) {
     if (tab === 'history') loadHistory();
     if (tab === 'users') loadUsers();
     if (tab === 'game') newGameCase();
-    // Обновляем видимость подвала
     updateFooterVisibility();
 }
 
@@ -1000,6 +1014,18 @@ function toggleScale() {
     localStorage.setItem('scale', currentScale);
     // Принудительно обновляем шрифт
     document.documentElement.style.fontSize = (currentScale === 1 ? 16 : currentScale === 2 ? 24 : 32) + 'px';
+}
+
+function toggleAddTemplateForm() {
+    const form = document.getElementById('addTemplateForm');
+    const btn = document.getElementById('showAddTemplateBtn');
+    if (form.style.display === 'none' || form.style.display === '') {
+        form.style.display = 'block';
+        btn.textContent = '➖ Скрыть форму';
+    } else {
+        form.style.display = 'none';
+        btn.textContent = '➕ Добавить шаблон';
+    }
 }
 
 // ============================================================
@@ -1697,8 +1723,9 @@ function renderTemplates(templates) {
     const isAdmin = user?.role === 'admin';
     const isModerator = user?.role === 'moderator' || isAdmin;
     
-    document.getElementById('addTemplateForm').style.display = isModerator ? 'grid' : 'none';
-
+    // Показываем/скрываем кнопку добавления (она управляется через toggleAddTemplateForm)
+    // Но видимость кнопки уже задаётся в setupRoles()
+    
     if (!templates.length) {
         container.innerHTML = '<p style="color:var(--text-secondary);">Нет шаблонов, соответствующих запросу.</p>';
         return;
@@ -1769,6 +1796,9 @@ async function addTemplateManually() {
         document.getElementById('templateComplaints').value = '';
         document.getElementById('templateAnamnesis').value = '';
         document.getElementById('templateProtocol').value = '';
+        // Сворачиваем форму
+        document.getElementById('addTemplateForm').style.display = 'none';
+        document.getElementById('showAddTemplateBtn').textContent = '➕ Добавить шаблон';
         loadTemplates();
     } catch (e) {
         showToast('Ошибка: ' + e.message, 'error');
